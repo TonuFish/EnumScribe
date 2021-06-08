@@ -2,11 +2,13 @@
 
 ## TODO List
 
-* AccessModifiers
+* AccessModifiers (Partially)
 * Fields
-* Warnings/Errors
+* Warnings/Errors (Partially)
   * Field|Property stray IgnoreScribe
 * Structs
+* Doccommenting
+* Commenting
 * Tests
 * Implement `using` for enums in both files (save chars)
 * Generic classes

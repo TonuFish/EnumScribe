@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 
 namespace EnumScribe
 {
-    [Generator]
+    [Generator("C#")]
     internal class ScribeEnumGenerator : ISourceGenerator
     {
         private const string EnumsHintName = "Enums.EnumScribe.g.cs";
@@ -60,108 +60,42 @@ namespace EnumScribe
                 var typeInfo = typeInfos.Find(x => x.FullName == typeSymbol.ToDisplayString());
                 if (typeInfo == default)
                 {
+                    // Unseen type
                     typeInfo = GetTypeInfoFromSymbol(typeSymbol);
                     typeInfos.Add(typeInfo);
                     if (typeInfo.IsPartial == false)
                     {
-                        // If class can't be partial-ed, skip processing
-                        // TODO: Error, class cannot be partial-ed
+                        // If type can't be partial-ed, skip processing
+                        // TODO: Error, type can't be partial-ed
                         continue;
                     }
                 }
                 else if (typeInfo.IsPartial == false)
                 {
+                    // Seen non-partialed type
                     continue;
                 }
 
-                var scribeAttribute = typeSymbol.GetAttributes().First(x => x.AttributeClass!.Name == nameof(ScribeEnumAttribute));
-
-                if (scribeAttribute.ConstructorArguments.Length == 1)
+                if (GetScribeEnumArgumentsFromSymbol(typeSymbol, context, out var suffix, out var includeFields, out var accessibility)
+                        == false)
                 {
-                    // Get attribute details
-                    var userSuffix = (string)scribeAttribute.ConstructorArguments[0].Value!;
-                    // TODO: Could do with a more accurate regex? "Think" it's fine
-                    if (Regex.IsMatch(userSuffix, @"[^\s]{1,}") == false)
-                    {
-                        // TODO: Tidy up the wording on this.
-                        // TODO: Diagnostic descriptors can live in a file by themselves, don't need to be bulk in the generator
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            new DiagnosticDescriptor(
-                                "ES0001",
-                                "Invalid suffix argument",
-                                "Class {0} {1} suffix argument must consist of valid identifier characters.",
-                                "EnumScribe.Naming",
-                                DiagnosticSeverity.Error,
-                                true,
-                                helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0001.md"),
-                            typeSymbol.Locations.FirstOrDefault(), // TODO: Make sure that location targets the right class location, non-trivial :\
-                            typeSymbol.Name, nameof(ScribeEnumAttribute)));
-
-                        continue;
-                    }
-
-                    typeInfo.Suffix = userSuffix;
-                } // else default suffix is used
-
-                /*
-                bool includeFields = false;
-                AccessModifiers accessModifiers = AccessModifiers.Public;
-                foreach (var arg in scribeAttribute.NamedArguments)
-                {
-                    switch (arg.Key)
-                    {
-                        case nameof(ScribeEnumAttribute.IncludeFields):
-                            includeFields = (bool)arg.Value.Value!;
-                            break;
-                        case nameof(ScribeEnumAttribute.AccessModifiers):
-                            accessModifiers = (AccessModifiers)arg.Value.Value!;
-                            break;
-                    }
+                    // Invalid attribute argument, skip processing
+                    continue;
                 }
-                */
 
-                if (typeSymbol.ContainingType != null)
+                typeInfo.Suffix = suffix;
+
+                if (typeSymbol.ContainingType is not null
+                    && (GetTypeInfoParentageFromSymbol(typeSymbol, typeInfo, typeInfos, context) == false))
                 {
-                    // annotated class is nested, record parents
-                    INamedTypeSymbol parentSymbol;
-                    TypeInfo? parentInfo;
-                    do
-                    {
-                        parentSymbol = (INamedTypeSymbol)typeSymbol.ContainingSymbol!;
-                        var parentFullName = parentSymbol.ToDisplayString();
-                        parentInfo = typeInfos.Find(x => x.FullName == parentFullName);
-                        if (parentInfo != default(TypeInfo))
-                        {
-                            // Parent type already recorded
-                            parentInfo.NestedTypes ??= new();
-                            parentInfo.NestedTypes!.Add(typeInfo);
-                            typeInfo.ParentType = parentInfo;
-                            break;
-                        }
-
-                        // Parent is an unseen class
-                        parentInfo = GetTypeInfoFromSymbol(parentSymbol);
-                        parentInfo.NestedTypes = new List<TypeInfo> { typeInfo };
-                        typeInfo.ParentType = parentInfo;
-                        if (parentInfo.IsPartial == false)
-                        {
-                            // TODO: Error, enclosing class cannot be partial-ed
-                            break;
-                        }
-                    } while (parentSymbol.ContainingType != null);
-
-                    if (parentInfo.IsPartial == false)
-                    {
-                        // Break outer loop
-                        continue;
-                    }
+                    continue;
                 }
 
                 // Get class properties that're enums
-                var typeMemberNameList = typeSymbol.GetMembers().Select(x => x.Name).ToList(); // TODO: Should be a set
+                var typeMemberNameList = new HashSet<string>(typeSymbol.GetMembers().Select(x => x.Name));
                 var typeEnumPropertySymbols = typeSymbol.GetMembers().OfType<IPropertySymbol>()
                     .Where(x =>
-                        x.DeclaredAccessibility == Accessibility.Public && // TODO: Custom accessibility
+                        accessibility.Contains(x.DeclaredAccessibility) &&
                         x.Type.TypeKind == TypeKind.Enum)
                     .ToList();
 
@@ -174,16 +108,16 @@ namespace EnumScribe
 
                 foreach (var memberSymbol in typeEnumPropertySymbols)
                 {
+                    if (memberSymbol.GetAttributes().Any(x => x.AttributeClass!.Name == nameof(IgnoreScribeAttribute)))
+                    {
+                        // IgnoreScribe attribute present, skip
+                        continue;
+                    }
+
                     if (typeMemberNameList.Contains(memberSymbol.Name + typeInfo.Suffix))
                     {
                         // If Name+Suffix already exists inside classSymbol.GetMembers(), warn it cannot be scribed
                         // TODO: Warning, cannot generate property as name is already taken
-                        continue;
-                    }
-
-                    if (memberSymbol.GetAttributes().Any(x => x.AttributeClass!.Name == nameof(IgnoreScribeAttribute)))
-                    {
-                        // IgnoreScribe attribute present, skip
                         continue;
                     }
 
@@ -230,7 +164,7 @@ namespace EnumScribe
                 IsStatic = symbol.IsStatic,
                 Name = symbol.Name,
                 Namespace = symbol.ContainingNamespace.ToDisplayString(),
-                Type = symbol.IsRecord ? "record" : "class"
+                Type = symbol.IsRecord ? "record" : "class" // TODO: Change when implementing structs
             };
 
             if (((ClassDeclarationSyntax)symbol.DeclaringSyntaxReferences[0].GetSyntax())
@@ -238,10 +172,89 @@ namespace EnumScribe
                 == false)
             {
                 // Partial must be delcared on every reference, therefore checking any text is fine
+                // Error is reported at call site as conditions differ
+                // TODO: CallerMemberNameAttribute + switch?
                 classInfo.IsPartial = false;
             }
 
             return classInfo;
+        }
+
+        private static bool GetScribeEnumArgumentsFromSymbol(INamedTypeSymbol symbol, GeneratorExecutionContext context,
+                    out string suffix, out bool includeFields, out HashSet<Accessibility> accessibility)
+        {
+            suffix = ScribeEnumAttribute.DefaultSuffix;
+            includeFields = false;
+            accessibility = new() { Accessibility.Public };
+
+            var attribute = symbol.GetAttributes().First(x => x.AttributeClass!.Name == nameof(ScribeEnumAttribute));
+            if (attribute.ConstructorArguments.Length == 1)
+            {
+                var userSuffix = (string)attribute.ConstructorArguments[0].Value!;
+                // TODO: Could do with "more than 2 second" regex
+                if (Regex.IsMatch(userSuffix, @"[^\s]{1,}") == false)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        ScribeEnumDiagnostics.ES0001,
+                        symbol.Locations[0], // TODO: Make sure that location targets the right class location, non-trivial :\
+                        symbol.Name, nameof(ScribeEnumAttribute)));
+
+                    return false;
+                }
+
+                suffix = userSuffix;
+            }
+
+            foreach (var arg in attribute.NamedArguments)
+            {
+                switch (arg.Key)
+                {
+                    case nameof(ScribeEnumAttribute.IncludeFields):
+                        includeFields = (bool)arg.Value.Value!;
+                        break;
+                    case nameof(ScribeEnumAttribute.AccessModifiers):
+                        var accessModifiers = (AccessModifiers)arg.Value.Value!;
+                        accessibility = MapAccessModifiersToAccessibility(accessModifiers);
+                        break;
+                    // default would be an unaccounted property, should never happen
+                }
+            }
+
+            return true;
+
+            static HashSet<Accessibility> MapAccessModifiersToAccessibility(AccessModifiers a)
+            {
+                // TODO: Big map Q_Q, prob internal extension method AccessModifiers instead...
+                return new() { Accessibility.Public };
+            };
+        }
+
+        private static bool GetTypeInfoParentageFromSymbol(INamedTypeSymbol symbol, TypeInfo info, List<TypeInfo> typeInfos, GeneratorExecutionContext context)
+        {
+            var parentSymbol = (INamedTypeSymbol)symbol.ContainingSymbol!;
+            var parentFullName = parentSymbol.ToDisplayString();
+            var parentInfo = typeInfos.Find(x => x.FullName == parentFullName);
+            if (parentInfo != default(TypeInfo))
+            {
+                // Parent type already recorded
+                parentInfo.NestedTypes ??= new();
+                parentInfo.NestedTypes!.Add(info);
+                info.ParentType = parentInfo;
+                return parentInfo.IsPartial;
+            }
+
+            // Parent is an unseen type
+            parentInfo = GetTypeInfoFromSymbol(parentSymbol);
+            parentInfo.NestedTypes = new List<TypeInfo> { info };
+            info.ParentType = parentInfo;
+
+            if (parentInfo.IsPartial == false)
+            {
+                // TODO: Throw error! Type is not partial when it needs to be
+                return false;
+            }
+
+            return GetTypeInfoParentageFromSymbol(parentSymbol, parentInfo, typeInfos, context);
         }
 
         private static EnumInfo GetEnumInfoFromSymbol(ITypeSymbol symbol)
@@ -282,7 +295,7 @@ namespace EnumScribe
 
         #region Generating
 
-        private string GenerateEnumsFile(List<EnumInfo> enumInfos)
+        private static string GenerateEnumsFile(List<EnumInfo> enumInfos)
         {
             var sb = new StringBuilder();
 
@@ -335,7 +348,7 @@ $@"                {enumInfo.FullName}.{name} => ""{description}"",
             return sb.ToString();
         }
 
-        private string GeneratePartialsFile(List<TypeInfo> types)
+        private static string GeneratePartialsFile(List<TypeInfo> types)
         {
             var sb = new StringBuilder();
 
@@ -392,50 +405,6 @@ $@"                {enumInfo.FullName}.{name} => ""{description}"",
              */
         }
 
-        #endregion Generatng
-
-        #region DataClasses
-
-        private class TypeInfo
-        {
-            public Accessibility Accessibility { get; set; }
-            public string FullName => $"{Namespace}.{Name}";
-            public bool IsPartial { get; set; } = true;
-            public bool IsStatic { get; set; }
-            public string Name { get; set; } = null!;
-            public string Namespace { get; set; } = null!;
-            public bool ShouldScribe { get; set; }
-            public string Suffix { get; set; } = ScribeEnumAttribute.DefaultSuffix;
-            public string Type { get; set; } = null!; // TODO: Change to non-string
-            public List<(string PropertyName, bool isNullable, EnumInfo EnumInfo)>? PropertyEnumMap { get; set; }
-            public List<(string PropertyName, bool isNullable, EnumInfo EnumInfo)>? FieldEnumMap { get; set; }
-
-            public TypeInfo? ParentType { get; set; }
-            public List<TypeInfo>? NestedTypes { get; set; }
-
-            public bool ValidClassToScribe
-            {
-                get
-                {
-                    var shouldScribe = ShouldScribe;
-                    var parent = ParentType;
-                    while (shouldScribe && parent != default)
-                    {
-                        shouldScribe = parent.IsPartial;
-                        parent = parent.ParentType;
-                    }
-                    return shouldScribe;
-                }
-            }
-        }
-
-        private class EnumInfo
-        {
-            public string FullName { get; set; } = null!; // Including namespace
-            public string Name { get; set; } = null!;
-            public List<(string Name, string Description)> EnumMap { get; set; } = null!;
-        }
-
-        #endregion DataClasses
+        #endregion Generating
     }
 }

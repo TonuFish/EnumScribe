@@ -7,7 +7,7 @@ namespace EnumScribe
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
     public sealed class ScribeEnumAttribute : Attribute
     {
-        internal readonly string _suffix;
+        private readonly string _suffix;
         internal const string DefaultSuffix = "Description";
 
         public ScribeEnumAttribute() : this(suffix: DefaultSuffix)
@@ -19,19 +19,19 @@ namespace EnumScribe
             _suffix = suffix;
         }
 
-        public AccessModifiers AccessModifiers { get; set; } = AccessModifiers.Public;
+        public AccessModifiers AccessModifiers { get; set; }
         public bool IncludeFields { get; set; }
     }
 
     [Flags]
     public enum AccessModifiers
     {
-        Public = 0b0001,
-        Private = 0b0010,
-        Protected = 0b0100, // WARNING: Anything protected has no impact on struct
-        Internal = 0b1000,
-        ProtectedInternal = Protected | Internal,
-        PrivateProtected = Private | Protected,
+        Public = 0,
+        Private = 1,
+        Protected = 2, // WARNING: Anything protected has no impact on struct
+        Internal = 4,
+        ProtectedInternal = 8, // WARNING: Anything protected has no impact on struct
+        PrivateProtected = 16, // WARNING: Anything protected has no impact on struct
     }
 
     // Analyzer :: make sure this is only applied to an enum, else warn
