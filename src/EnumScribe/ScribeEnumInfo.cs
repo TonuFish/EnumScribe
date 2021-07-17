@@ -12,34 +12,42 @@ namespace EnumScribe
         public string Name { get; set; } = null!;
         public string Namespace { get; set; } = null!;
         public bool ShouldScribe { get; set; }
-        public string Suffix { get; set; } = string.Empty;
+        public string Suffix { get; set; } = null!;
         public string Type { get; set; } = null!; // TODO: Change to non-string
-        public List<(string PropertyName, bool isNullable, EnumInfo EnumInfo)>? PropertyEnumMap { get; set; }
-        public List<(string PropertyName, bool isNullable, EnumInfo EnumInfo)>? FieldEnumMap { get; set; }
+        public List<MemberInfo>? PropertyEnumMembers { get; set; }
+        public List<MemberInfo>? FieldEnumMembers { get; set; }
 
         public TypeInfo? ParentType { get; set; }
         public List<TypeInfo>? NestedTypes { get; set; }
 
-        public bool ValidClassToScribe
+        public bool HasFullPartialLineage
         {
             get
             {
-                // TODO: This won't work, need more thought
-                var shouldScribe = ShouldScribe;
+                var fullPartialLineage = true;
                 var parent = ParentType;
-                while (shouldScribe && parent != default)
+                while (fullPartialLineage && parent != default)
                 {
-                    shouldScribe = parent.IsPartial;
+                    fullPartialLineage = parent.IsPartial;
                     parent = parent.ParentType;
                 }
-                return shouldScribe;
+                return fullPartialLineage;
             }
         }
     }
 
+    internal class MemberInfo
+    {
+        public Accessibility Accessibility { get; set; }
+        public EnumInfo EnumInfo { get; set; } = null!;
+        public string Name { get; set; } = null!;
+        public bool IsNullable { get; set; }
+        public bool IsStatic { get; set; }
+    }
+
     internal class EnumInfo
     {
-        public string FullName { get; set; } = null!; // Including namespace
+        public string FullName { get; set; } = null!;
         public string Name { get; set; } = null!;
         public List<(string Name, string Description)> EnumMap { get; set; } = null!;
     }

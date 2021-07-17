@@ -7,7 +7,7 @@ namespace EnumScribe
         // TODO: Release tracking analyzer, thanks roslynator!
         // https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md
 
-        internal static readonly DiagnosticDescriptor ES0001 = new DiagnosticDescriptor
+        internal static readonly DiagnosticDescriptor ES0001 = new
         (
             "ES0001",
             "Invalid suffix argument",

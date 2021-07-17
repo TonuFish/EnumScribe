@@ -14,7 +14,8 @@ namespace Samples
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            //var x = Fisherman.Cake;
+            var trout = new Trout();
+            var suffix = trout.UnderscoreEnumProperty_Description;
         }
     }
 
@@ -26,7 +27,7 @@ namespace Samples
         }
     }
 
-    [ScribeEnum("EditedSuffix", IncludeFields = true, AccessModifiers = AccessModifiers.Public | AccessModifiers.Private)]
+    [ScribeEnum("EditedSuffix", IncludeFields = true, AccessModifiers = AccessModifier.Public | AccessModifier.Private)]
     public partial class Fish
     {
         [IgnoreScribe]
@@ -62,6 +63,7 @@ namespace Samples
 
         public enum Fisherman
         {
+            [Description("pie")]
             UnderscorePie = 0,
         }
     }

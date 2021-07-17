@@ -19,19 +19,20 @@ namespace EnumScribe
             _suffix = suffix;
         }
 
-        public AccessModifiers AccessModifiers { get; set; }
-        public bool IncludeFields { get; set; }
+        public AccessModifier AccessModifiers { get; set; } = AccessModifier.Public;
+        public bool IncludeFields { get; set; } = false;
     }
 
     [Flags]
-    public enum AccessModifiers
+    public enum AccessModifier
     {
         Public = 0,
         Private = 1,
-        Protected = 2, // WARNING: Anything protected has no impact on struct
+        Protected = 2, // INFO: Anything protected has no impact on struct
         Internal = 4,
-        ProtectedInternal = 8, // WARNING: Anything protected has no impact on struct
-        PrivateProtected = 16, // WARNING: Anything protected has no impact on struct
+        ProtectedInternal = 8, // INFO: Anything protected has no impact on struct
+        PrivateProtected = 16, // INFO: Anything protected has no impact on struct
+        All = Public | Private | Protected | Internal | ProtectedInternal | PrivateProtected,
     }
 
     // Analyzer :: make sure this is only applied to an enum, else warn

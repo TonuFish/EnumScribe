@@ -2,11 +2,11 @@
 
 ## TODO List
 
-* AccessModifiers (Partially)
 * Fields
 * Warnings/Errors (Partially)
   * Field|Property stray IgnoreScribe
 * Structs
+* Record Structs (.NET 6)
 * Doccommenting
 * Commenting
 * Tests

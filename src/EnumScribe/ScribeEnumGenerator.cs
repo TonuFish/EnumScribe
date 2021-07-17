@@ -10,11 +10,12 @@ using System.Text.RegularExpressions;
 
 namespace EnumScribe
 {
-    [Generator("C#")]
+    [Generator(LanguageNames.CSharp)]
     internal class ScribeEnumGenerator : ISourceGenerator
     {
         private const string EnumsHintName = "Enums.EnumScribe.g.cs";
         private const string PartialsHintName = "Partials.EnumScribe.g.cs";
+        private const int IndentWidth = 4;
 
         public void Initialize(GeneratorInitializationContext context)
         {
@@ -35,9 +36,9 @@ namespace EnumScribe
                 return;
             }
 
-            (var typeInfos, var enumInfos) = ParseTypeNodes(context, receiver.ClassesSymbolsWithScribeEnumAttribute);
+            (var typeInfos, var enumInfos) = ParseTypeNodes(context, receiver.ClassSymbolsWithScribeEnumAttribute);
 
-            if (enumInfos.Count > 0)
+            if (typeInfos.Count > 0)
             {
                 var enumsSource = GenerateEnumsFile(enumInfos);
                 context.AddSource(EnumsHintName, enumsSource);
@@ -49,11 +50,12 @@ namespace EnumScribe
 
         #region Parsing
 
-        private static (List<TypeInfo>, List<EnumInfo>) ParseTypeNodes(GeneratorExecutionContext context, List<INamedTypeSymbol> scribedTypeSymbols)
+        private static (List<TypeInfo>, List<EnumInfo>) ParseTypeNodes(GeneratorExecutionContext context,
+            List<INamedTypeSymbol> scribedTypeSymbols)
         {
             var compilation = context.Compilation;
-            var typeInfos = new List<TypeInfo>(scribedTypeSymbols.Count);
-            var enumInfos = new List<EnumInfo>();
+            List<TypeInfo> typeInfos = new(scribedTypeSymbols.Count);
+            List<EnumInfo> enumInfos = new();
 
             foreach (var typeSymbol in scribedTypeSymbols)
             {
@@ -63,6 +65,7 @@ namespace EnumScribe
                     // Unseen type
                     typeInfo = GetTypeInfoFromSymbol(typeSymbol);
                     typeInfos.Add(typeInfo);
+
                     if (typeInfo.IsPartial == false)
                     {
                         // If type can't be partial-ed, skip processing
@@ -72,32 +75,33 @@ namespace EnumScribe
                 }
                 else if (typeInfo.IsPartial == false)
                 {
-                    // Seen non-partialed type
+                    // Seen non-partialed type, skip
                     continue;
                 }
 
-                if (GetScribeEnumArgumentsFromSymbol(typeSymbol, context, out var suffix, out var includeFields, out var accessibility)
+                if (GetScribeEnumArgumentsFromSymbol(typeSymbol, context,
+                        out var suffix, out var includeFields, out var accessibility)
                         == false)
                 {
-                    // Invalid attribute argument, skip processing
+                    // Invalid attribute argument[s], skip
                     continue;
                 }
 
                 typeInfo.Suffix = suffix;
 
                 if (typeSymbol.ContainingType is not null
-                    && (GetTypeInfoParentageFromSymbol(typeSymbol, typeInfo, typeInfos, context) == false))
+                    && (GetTypeInfoLineageFromSymbol(typeSymbol, typeInfo, typeInfos, context) == false))
                 {
+                    // At least one parent isn't partialed, skip
                     continue;
                 }
 
                 // Get class properties that're enums
-                var typeMemberNameList = new HashSet<string>(typeSymbol.GetMembers().Select(x => x.Name));
+                HashSet<string> typeMemberNameList = new(typeSymbol.GetMembers().Select(x => x.Name));
                 var typeEnumPropertySymbols = typeSymbol.GetMembers().OfType<IPropertySymbol>()
                     .Where(x =>
-                        accessibility.Contains(x.DeclaredAccessibility) &&
-                        x.Type.TypeKind == TypeKind.Enum)
-                    .ToList();
+                        accessibility.Contains(x.DeclaredAccessibility)
+                        && x.Type.TypeKind == TypeKind.Enum);
 
                 /* TODO:
                  * Nullable enums != TypeKind.Enum (Struct)
@@ -130,8 +134,15 @@ namespace EnumScribe
                         enumInfos.Add(enumInfo);
                     }
 
-                    typeInfo.PropertyEnumMap ??= new();
-                    typeInfo.PropertyEnumMap.Add((memberSymbol.Name, false, enumInfo!));
+                    typeInfo.PropertyEnumMembers ??= new();
+                    typeInfo.PropertyEnumMembers.Add(new()
+                    {
+                        Accessibility = memberSymbol.DeclaredAccessibility,
+                        EnumInfo = enumInfo!,
+                        Name = memberSymbol.Name,
+                        IsNullable = false,
+                        IsStatic = memberSymbol.IsStatic,
+                    });
                 }
 
                 /*
@@ -181,7 +192,7 @@ namespace EnumScribe
         }
 
         private static bool GetScribeEnumArgumentsFromSymbol(INamedTypeSymbol symbol, GeneratorExecutionContext context,
-                    out string suffix, out bool includeFields, out HashSet<Accessibility> accessibility)
+            out string suffix, out bool includeFields, out HashSet<Accessibility> accessibility)
         {
             suffix = ScribeEnumAttribute.DefaultSuffix;
             includeFields = false;
@@ -190,9 +201,9 @@ namespace EnumScribe
             var attribute = symbol.GetAttributes().First(x => x.AttributeClass!.Name == nameof(ScribeEnumAttribute));
             if (attribute.ConstructorArguments.Length == 1)
             {
-                var userSuffix = (string)attribute.ConstructorArguments[0].Value!;
+                var userSuffix = ((string)attribute.ConstructorArguments[0].Value!).Trim();
                 // TODO: Could do with "more than 2 second" regex
-                if (Regex.IsMatch(userSuffix, @"[^\s]{1,}") == false)
+                if (Regex.IsMatch(userSuffix, @"[^\s]+") == false)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
                         ScribeEnumDiagnostics.ES0001,
@@ -213,23 +224,17 @@ namespace EnumScribe
                         includeFields = (bool)arg.Value.Value!;
                         break;
                     case nameof(ScribeEnumAttribute.AccessModifiers):
-                        var accessModifiers = (AccessModifiers)arg.Value.Value!;
-                        accessibility = MapAccessModifiersToAccessibility(accessModifiers);
+                        var accessModifiers = (AccessModifier)arg.Value.Value!;
+                        accessibility = accessModifiers.ToAccessibility();
                         break;
-                    // default would be an unaccounted property, should never happen
                 }
             }
 
             return true;
-
-            static HashSet<Accessibility> MapAccessModifiersToAccessibility(AccessModifiers a)
-            {
-                // TODO: Big map Q_Q, prob internal extension method AccessModifiers instead...
-                return new() { Accessibility.Public };
-            };
         }
 
-        private static bool GetTypeInfoParentageFromSymbol(INamedTypeSymbol symbol, TypeInfo info, List<TypeInfo> typeInfos, GeneratorExecutionContext context)
+        private static bool GetTypeInfoLineageFromSymbol(INamedTypeSymbol symbol, TypeInfo info, List<TypeInfo> typeInfos,
+            GeneratorExecutionContext context)
         {
             var parentSymbol = (INamedTypeSymbol)symbol.ContainingSymbol!;
             var parentFullName = parentSymbol.ToDisplayString();
@@ -245,7 +250,8 @@ namespace EnumScribe
 
             // Parent is an unseen type
             parentInfo = GetTypeInfoFromSymbol(parentSymbol);
-            parentInfo.NestedTypes = new List<TypeInfo> { info };
+            parentInfo.NestedTypes = new() { info };
+            typeInfos.Add(parentInfo);
             info.ParentType = parentInfo;
 
             if (parentInfo.IsPartial == false)
@@ -254,7 +260,7 @@ namespace EnumScribe
                 return false;
             }
 
-            return GetTypeInfoParentageFromSymbol(parentSymbol, parentInfo, typeInfos, context);
+            return GetTypeInfoLineageFromSymbol(parentSymbol, parentInfo, typeInfos, context);
         }
 
         private static EnumInfo GetEnumInfoFromSymbol(ITypeSymbol symbol)
@@ -274,12 +280,12 @@ namespace EnumScribe
                     .FirstOrDefault(x => x.AttributeClass!.Name == nameof(DescriptionAttribute));
                 if (descriptionAttribute == default)
                 {
-                    // TODO: Warn this attribute does not have a description, therefore it's using the default value (Name)
+                    // TODO: Warn this attribute doesn't have a description, therefore it's using the default value (Name)
                     enumInfo.EnumMap.Add((enumSymbol.Name, enumSymbol.Name));
                 }
                 else if (descriptionAttribute.ConstructorArguments.Length == 0)
                 {
-                    // TODO: Warn there's an empty description attribute, no text will be displayed
+                    // TODO: Info there's an empty description attribute, no text will be displayed
                     enumInfo.EnumMap.Add((enumSymbol.Name, string.Empty));
                 }
                 else
@@ -297,10 +303,10 @@ namespace EnumScribe
 
         private static string GenerateEnumsFile(List<EnumInfo> enumInfos)
         {
-            var sb = new StringBuilder();
+            StringBuilder sb = new();
 
             // Namespace, class headers
-            sb.Append(
+            sb.AppendLine(
 @"using System.CodeDom.Compiler;
 using System.Runtime.CompilerServices;
 
@@ -308,32 +314,28 @@ namespace EnumScribe.Generated.Enums
 {
     [GeneratedCodeAttribute(""ScribeEnumGenerator"", ""0.8.0-alpha"")]
     internal static class EnumDescriptions
-    {
-");
+    {");
+
             foreach (var enumInfo in enumInfos)
             {
                 // method header
-                sb.Append(
+                sb.AppendLine(
 $@"        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string Description(this {enumInfo.FullName} e) => e switch
-            {{
-");
+        public static string DescriptionText(this {enumInfo.FullName} e) => e switch
+            {{");
 
                 foreach (var (name, description) in enumInfo.EnumMap)
                 {
-                    sb.Append(
-$@"                {enumInfo.FullName}.{name} => ""{description}"",
-");
+                    sb.AppendLine(
+$@"                {enumInfo.FullName}.{name} => ""{description}"",");
                 }
 
-                sb.Append(
-@"                _ => string.Empty,
-");
+                sb.AppendLine(
+@"                _ => string.Empty,");
 
                 // method footer
-                sb.Append(
+                sb.AppendLine(
 @"            };
-
 ");
             }
 
@@ -350,59 +352,108 @@ $@"                {enumInfo.FullName}.{name} => ""{description}"",
 
         private static string GeneratePartialsFile(List<TypeInfo> types)
         {
-            var sb = new StringBuilder();
+            StringBuilder sb = new();
+
+            // Required generator usings
+            sb.AppendLine(
+@"using System.CodeDom.Compiler;
+using System.Runtime.CompilerServices;
+using EnumScribe.Generated.Enums;
+");
 
             // Reduce to base classes, group by namespace
-            var typeByNamespace = types
-                .Where(x => x.ParentType == default)
+            var typesByNamespace = types
+                .Where(x => x.ParentType == default && x.HasFullPartialLineage)
                 .GroupBy(x => x.Namespace);
 
-            foreach (var groupedInfo in typeByNamespace)
+            foreach (var namespaceGroup in typesByNamespace)
             {
-                // TODO: write namespace header
+                // Write namespace header
+                sb.Append(
+$@"namespace {namespaceGroup.Key}
+{{");
 
-                foreach (var typeInfo in groupedInfo)
+                foreach (var rootType in namespaceGroup)
                 {
-                    GenerateTypeText(sb, typeInfo);
+                    sb.AppendLine();
+                    GenerateTypeText(sb, rootType, 1);
                 }
 
-                // TODO: write type footer
-
-                // TODO: write namespace footer
+                // Write namespace footer
+                sb.AppendLine(
+@"}
+");
             }
+
+            // Remove trailing newline
+            sb.Length -= Environment.NewLine.Length;
 
             return sb.ToString();
 
-            static void GenerateTypeText(StringBuilder sb, TypeInfo typeInfo)
+            static void GenerateTypeText(StringBuilder sb, TypeInfo type, int baseIndentation)
             {
-                // TODO: Handle indentation, # of spaces
+                var classIndent = GetIndentation(baseIndentation);
 
-                // TODO: write type header
-                // TODO: write property map
-                // TODO: write field map
+                // Write type header
+                sb.AppendLine(
+$@"{classIndent}{type.Accessibility.ToText()} {StaticText(type.IsStatic)}partial {type.Type} {type.Name}
+{classIndent}{{");
 
-                if (typeInfo.NestedTypes is not null)
+                if (type.ShouldScribe)
                 {
-                    foreach (var nestedType in typeInfo.NestedTypes)
+                    var methodIndent = GetIndentation(baseIndentation + 1);
+
+                    if (type.PropertyEnumMembers is not null)
                     {
-                        GenerateTypeText(sb, nestedType);
+                        foreach (var property in type.PropertyEnumMembers)
+                        {
+                            GenerateMemberText(sb, type, property, methodIndent);
+                        }
+                    }
+
+                    if (type.FieldEnumMembers is not null)
+                    {
+                        foreach (var field in type.FieldEnumMembers)
+                        {
+                            GenerateMemberText(sb, type, field, methodIndent);
+                        }
                     }
                 }
+
+                if (type.NestedTypes is not null)
+                {
+                    sb.AppendLine();
+
+                    foreach (var nestedType in type.NestedTypes)
+                    {
+                        GenerateTypeText(sb, nestedType, ++baseIndentation);
+                    }
+                }
+
+                // Write type footer
+                sb.AppendLine($@"{classIndent}}}");
             }
 
-            /*
-             * typeInfos group by namespace, if any ValidTypeToScribe
-             * foreach namespace
-             * - write namespace header
-             * - foreach type where ParentType == default
-             * -- write type header
-             * -- write property enum map
-             * -- write field enum map
-             * -- write nested types
-             * --- (loop loop loop)
-             * -- write type footer
-             * - write namespace footer
-             */
+            static string GetIndentation(int indentationLevel)
+                => new(' ', indentationLevel * IndentWidth);
+
+            static string StaticText(bool isStatic)
+                => isStatic ? "static " : string.Empty;
+
+            static void GenerateMemberText(StringBuilder sb, TypeInfo type, MemberInfo member, string methodIndent)
+            {
+                sb
+                    .Append(methodIndent)
+                    .Append(member.Accessibility.ToText())
+                    .Append(' ')
+                    .Append(StaticText(type.IsStatic))
+                    .Append("string ")
+                    .Append(member.Name)
+                    .Append(type.Suffix)
+                    .Append(" => ")
+                    .Append(member.Name)
+                    .AppendLine(".DescriptionText();");
+            }
         }
 
         #endregion Generating
