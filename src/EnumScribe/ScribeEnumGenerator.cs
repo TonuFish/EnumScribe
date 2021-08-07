@@ -184,7 +184,6 @@ namespace EnumScribe
             {
                 // Partial must be delcared on every reference, therefore checking any text is fine
                 // Error is reported at call site as conditions differ
-                // TODO: CallerMemberNameAttribute + switch?
                 classInfo.IsPartial = false;
             }
 
@@ -226,6 +225,7 @@ namespace EnumScribe
                     case nameof(ScribeEnumAttribute.AccessModifiers):
                         var accessModifiers = (AccessModifier)arg.Value.Value!;
                         accessibility = accessModifiers.ToAccessibility();
+                        // TODO: Warning if IS struct AND anything protected
                         break;
                 }
             }
@@ -319,31 +319,35 @@ namespace EnumScribe.Generated.Enums
             foreach (var enumInfo in enumInfos)
             {
                 // method header
-                sb.AppendLine(
-$@"        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string DescriptionText(this {enumInfo.FullName} e) => e switch
-            {{");
+                sb.Append(
+@"        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string DescriptionText(this ").Append(enumInfo.FullName).AppendLine(@" e) => e switch
+            {");
 
                 foreach (var (name, description) in enumInfo.EnumMap)
                 {
-                    sb.AppendLine(
-$@"                {enumInfo.FullName}.{name} => ""{description}"",");
+                    sb
+                        .Append("                ")
+                        .Append(enumInfo.FullName)
+                        .Append('.')
+                        .Append(name)
+                        .Append(@" => """)
+                        .Append(description)
+                        .AppendLine(@""",");
                 }
 
-                sb.AppendLine(
-@"                _ => string.Empty,");
+                sb.AppendLine("                _ => string.Empty,");
 
                 // method footer
-                sb.AppendLine(
-@"            };
-");
+                sb.AppendLine("            };");
+                sb.AppendLine();
             }
 
             // Remove trailing newline
             sb.Length -= Environment.NewLine.Length;
 
             // Namespace, class footers
-            sb.Append(
+            sb.AppendLine(
 @"    }
 }");
 
@@ -369,9 +373,10 @@ using EnumScribe.Generated.Enums;
             foreach (var namespaceGroup in typesByNamespace)
             {
                 // Write namespace header
-                sb.Append(
-$@"namespace {namespaceGroup.Key}
-{{");
+                sb
+                    .Append("namespace ")
+                    .AppendLine(namespaceGroup.Key)
+                    .Append("{");
 
                 foreach (var rootType in namespaceGroup)
                 {
@@ -380,9 +385,8 @@ $@"namespace {namespaceGroup.Key}
                 }
 
                 // Write namespace footer
-                sb.AppendLine(
-@"}
-");
+                sb.AppendLine("}");
+                sb.AppendLine();
             }
 
             // Remove trailing newline
@@ -395,9 +399,17 @@ $@"namespace {namespaceGroup.Key}
                 var classIndent = GetIndentation(baseIndentation);
 
                 // Write type header
-                sb.AppendLine(
-$@"{classIndent}{type.Accessibility.ToText()} {StaticText(type.IsStatic)}partial {type.Type} {type.Name}
-{classIndent}{{");
+                sb
+                    .Append(classIndent)
+                    .Append(type.Accessibility.ToText())
+                    .Append(' ')
+                    .Append(StaticText(type.IsStatic))
+                    .Append("partial ")
+                    .Append(type.Type)
+                    .Append(' ')
+                    .AppendLine(type.Name)
+                    .Append(classIndent)
+                    .AppendLine("{");
 
                 if (type.ShouldScribe)
                 {
@@ -407,7 +419,7 @@ $@"{classIndent}{type.Accessibility.ToText()} {StaticText(type.IsStatic)}partial
                     {
                         foreach (var property in type.PropertyEnumMembers)
                         {
-                            GenerateMemberText(sb, type, property, methodIndent);
+                            WriteMemberText(sb, type, property, methodIndent);
                         }
                     }
 
@@ -415,7 +427,7 @@ $@"{classIndent}{type.Accessibility.ToText()} {StaticText(type.IsStatic)}partial
                     {
                         foreach (var field in type.FieldEnumMembers)
                         {
-                            GenerateMemberText(sb, type, field, methodIndent);
+                            WriteMemberText(sb, type, field, methodIndent);
                         }
                     }
                 }
@@ -431,16 +443,14 @@ $@"{classIndent}{type.Accessibility.ToText()} {StaticText(type.IsStatic)}partial
                 }
 
                 // Write type footer
-                sb.AppendLine($@"{classIndent}}}");
+                sb.Append(classIndent).AppendLine("}");
             }
 
-            static string GetIndentation(int indentationLevel)
-                => new(' ', indentationLevel * IndentWidth);
+            static string GetIndentation(int indentationLevel) => new(' ', indentationLevel * IndentWidth);
 
-            static string StaticText(bool isStatic)
-                => isStatic ? "static " : string.Empty;
+            static string StaticText(bool isStatic) => isStatic ? "static " : string.Empty;
 
-            static void GenerateMemberText(StringBuilder sb, TypeInfo type, MemberInfo member, string methodIndent)
+            static void WriteMemberText(StringBuilder sb, TypeInfo type, MemberInfo member, string methodIndent)
             {
                 sb
                     .Append(methodIndent)
