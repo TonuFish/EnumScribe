@@ -2,14 +2,39 @@
 
 ## TODO List
 
-* Fields
-* Warnings/Errors (Partially)
+### V1.0
+
+* Repeat sanity testing / bugsplatting
+* Error/Warning/Info (Partially)
   * Field|Property stray IgnoreScribe
+* Full Error/Warning/Info pages
 * Commenting
 * Doccommenting
-* Structs
-* Record Structs (.NET 6)
-* Tests
+* Fields (**MAYBE**)
+* Support partial methods (Allow class to have `partial EnumDescription();` method)
+* Some samples
+* Real `README.md`
+
+### V1.1
+
+* New attribute (#NAME) to manually override suffix on a property/field basis
 * Generic classes
 * Generic classes where T is an enum
-* [maybe] Implement `using` for enums in both files (save chars)
+
+### V1.15
+
+* Localisation
+* Acknowledge (#NAME) attribute on property without the containing class requiring ScribeEnum
+
+### V1.2
+
+* Structs
+* Record Structs (.NET 6)
+
+### V1.3
+
+* STRETCH: Handle derived description attributes (don't use constructor\[0])
+
+### Sometime
+
+* Tests

@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace EnumScribe
 {
@@ -42,7 +41,7 @@ namespace EnumScribe
                 Accessibility.Internal => "internal",
                 Accessibility.ProtectedOrInternal => "protected internal",
                 Accessibility.Public => "public",
-                // TODO: Double check handling of no modifier present, should be internal default
+                // Default case should never be hit
                 _ => string.Empty,
             };
     }

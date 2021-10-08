@@ -7,10 +7,10 @@ namespace EnumScribe.Tests
 {
     public class ScribeEnumTests
     {
-        [Fact]
-        public void Test1()
-        {
-        }
+        //[Fact]
+        //public void Test1()
+        //{
+        //}
 
         // ScribeEnum default works
         // - Targeting right namespaces

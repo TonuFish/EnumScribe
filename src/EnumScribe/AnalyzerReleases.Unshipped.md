@@ -4,4 +4,4 @@
 ### New Rules
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-ES0001 | EnumScribe.Naming | Error | ScribeEnumDiagnostics, [Documentation](https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0001.md)
+ES0001 | EnumScribe.Naming | Error | ScribeEnumDiagnostics, [Documentation](https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0001.md)

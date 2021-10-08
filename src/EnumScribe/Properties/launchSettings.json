@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "EnumScribe": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\..\\samples\\EnumScribe.Samples\\EnumScribe.Samples.csproj"
+    }
+  }
+}

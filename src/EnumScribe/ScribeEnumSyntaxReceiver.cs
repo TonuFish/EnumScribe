@@ -1,6 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -8,7 +7,7 @@ namespace EnumScribe
 {
     internal class ScribeEnumSyntaxReceiver : ISyntaxContextReceiver
     {
-        public List<INamedTypeSymbol> ClassSymbolsWithScribeEnumAttribute { get; } = new();
+        public List<INamedTypeSymbol> ClassSymbolsWithScribeAttribute { get; } = new();
         //public List<StructDeclarationSyntax> StructsWithAttributes { get; } = new();
         //public List<MemberDeclarationSyntax> MembersWithIgnoreScribeAttribute
 
@@ -23,9 +22,9 @@ namespace EnumScribe
                 } cds)
             {
                 var symbol = (INamedTypeSymbol)context.SemanticModel.GetDeclaredSymbol(cds)!;
-                if (symbol.GetAttributes().Any(x => x.AttributeClass?.Name == nameof(ScribeEnumAttribute)))
+                if (symbol.GetAttributes().Any(x => x.AttributeClass?.Name == nameof(ScribeAttribute)))
                 {
-                    ClassSymbolsWithScribeEnumAttribute.Add(symbol);
+                    ClassSymbolsWithScribeAttribute.Add(symbol);
                 }
             }
             //else if (syntaxNode is StructDeclarationSyntax

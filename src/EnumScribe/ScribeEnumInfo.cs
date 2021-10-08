@@ -7,13 +7,23 @@ namespace EnumScribe
     {
         public Accessibility Accessibility { get; set; }
         public string FullName => $"{Namespace}.{Name}";
+
+        /// <summary>
+        /// Defaults to <c>true</c>.
+        /// </summary>
         public bool IsPartial { get; set; } = true;
+
         public bool IsStatic { get; set; }
         public string Name { get; set; } = null!;
         public string Namespace { get; set; } = null!;
         public bool ShouldScribe { get; set; }
         public string Suffix { get; set; } = null!;
-        public string Type { get; set; } = null!; // TODO: Change to non-string
+
+        /// <summary>
+        /// ("class" | "record") currently, TODO
+        /// </summary>
+        public string Type { get; set; } = null!;
+
         public List<MemberInfo>? PropertyEnumMembers { get; set; }
         public List<MemberInfo>? FieldEnumMembers { get; set; }
 
@@ -24,7 +34,8 @@ namespace EnumScribe
         {
             get
             {
-                var fullPartialLineage = true;
+                // Don't bother checking the lineage if this type isn't partial
+                var fullPartialLineage = IsPartial;
                 var parent = ParentType;
                 while (fullPartialLineage && parent != default)
                 {
@@ -36,6 +47,9 @@ namespace EnumScribe
         }
     }
 
+    /// <summary>
+    /// Property currently, TODO.
+    /// </summary>
     internal class MemberInfo
     {
         public Accessibility Accessibility { get; set; }

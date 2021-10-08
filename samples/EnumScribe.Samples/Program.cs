@@ -2,11 +2,6 @@
 using System.ComponentModel;
 using EnumScribe;
 
-namespace Other
-{
-
-}
-
 namespace Samples
 {
     static class Program
@@ -14,34 +9,38 @@ namespace Samples
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            var trout = new Trout();
-            var suffix = trout.UnderscoreEnumProperty_Description;
+            //var trout = new Trout();
+            //var suffix = trout.UnderscoreEnumProperty_Description;
         }
     }
 
     public partial class Fish
     {
-        public partial class FishyTest
-        {
+        //public partial class FishyTest
+        //{
 
-        }
+        //}
     }
 
-    [ScribeEnum("EditedSuffix", IncludeFields = true, AccessModifiers = AccessModifier.Public | AccessModifier.Private)]
+    //[Scribe("EditedSuffix", IncludeFields = true, AccessModifiers = AccessModifier.Public | AccessModifier.Private)]
     public partial class Fish
     {
-        [IgnoreScribe]
-        public Fisherman ToIgnoreEnum { get; set; } = Fisherman.IgnoreCake;
+        //[IgnoreScribe]
+        //public Fisherman ToIgnoreEnum { get; set; } = Fisherman.IgnoreCake;
 
         public Fisherman ShouldSeeProperty { get; set; } = Fisherman.PropertyCake;
-        public Fisherman ShouldSeeField = Fisherman.FieldCake;
-        public Fisherman? NullableShouldSeeProperty { get; set; } = Fisherman.NullablePropertyCake; // TODO: Reminder to handle Nullable<Enum>
 
-        [ScribeEnum]
-        public partial class FishyTest
-        {
-            public Fisherman TestFishy { get; set; }
-        }
+        [NoScribe]
+        public Fisherman ShouldSeeField = Fisherman.FieldCake;
+
+        //public Fisherman? NullableQMarkShouldSeeProperty { get; set; } = Fisherman.NullablePropertyCake;
+        //public Nullable<Fisherman> NullableVerboseShouldSeeProperty { get; set; } = Fisherman.NullablePropertyCake;
+
+        //[ScribeEnum]
+        //public partial class FishyTest
+        //{
+        //    public Fisherman TestFishy { get; set; }
+        //}
 
         public enum Fisherman
         {
@@ -56,17 +55,17 @@ namespace Samples
         }
     }
 
-    [ScribeEnum("_Description")]
-    public partial class Trout
-    {
-        public Fisherman UnderscoreEnumProperty { get; set; } = Fisherman.UnderscorePie;
+    //[ScribeEnum("_Description")]
+    //public partial class Trout
+    //{
+    //    public Fisherman UnderscoreEnumProperty { get; set; } = Fisherman.UnderscorePie;
 
-        public enum Fisherman
-        {
-            [Description("pie")]
-            UnderscorePie = 0,
-        }
-    }
+    //    public enum Fisherman
+    //    {
+    //        [Description("pie")]
+    //        UnderscorePie = 0,
+    //    }
+    //}
 
     //public class Cake<T>
     //{
@@ -75,9 +74,16 @@ namespace Samples
     //    public T CakeProperty { get; set; }
     //}
 
-    public class ShouldNotAppear
+    partial class ShouldNotAppear
     {
         public Fisherman NoAppear { get; set; } = Fisherman.Alpaca;
+
+        [Scribe]
+        partial class ShouldAppearInsideShouldNotAppear
+        {
+            public Fisherman Fish { get; set; }
+            //public partial string FishDescription(); Support this.
+        }
 
         public enum Fisherman
         {
