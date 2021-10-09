@@ -56,6 +56,7 @@ namespace EnumScribe
         public EnumInfo EnumInfo { get; set; } = null!;
         public string Name { get; set; } = null!;
         public bool IsNullable { get; set; }
+        public bool IsPartial { get; set; }
         public bool IsStatic { get; set; }
     }
 

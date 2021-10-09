@@ -118,8 +118,7 @@ namespace EnumScribe
                     continue;
                 }
 
-                HashSet<string> typeMemberNameList = new(typeSymbol.GetMembers().Select(x => x.Name));
-
+                IReadOnlyDictionary<string, ISymbol> typeMemberNameToSymbol = typeSymbol.GetMembers().ToDictionary(x => x.Name);
                 var shouldScribe = false;
 
                 foreach (var propertySymbol in typeEnumPropertySymbols)
@@ -130,16 +129,23 @@ namespace EnumScribe
                         continue;
                     }
 
-                    if (typeMemberNameList.Contains(propertySymbol.Name + typeInfo.Suffix))
+                    var isPartial = false;
+                    if (typeMemberNameToSymbol.TryGetValue(propertySymbol.Name + typeInfo.Suffix, out var existingSymbol))
                     {
-                        // TODO: If the method is partial though, then it's completely ok!
+                        if (existingSymbol is IMethodSymbol m && m.IsPartialDefinition)
+                        {
+                            isPartial = true;
+                        }
+                        else
+                        {
+                            context.ReportDiagnostic(Diagnostic.Create(
+                                descriptor: ScribeEnumDiagnostics.ES0005,
+                                location: propertySymbol.Locations[0],
+                                typeInfo.Name));
 
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            descriptor: ScribeEnumDiagnostics.ES0005,
-                            location: propertySymbol.Locations[0],
-                            typeInfo.Name));
-
-                        continue;
+                            // Naming collision, skip
+                            continue;
+                        }
                     }
 
                     var enumFullName = propertySymbol.Type.NullableAnnotation is NullableAnnotation.Annotated
@@ -161,6 +167,7 @@ namespace EnumScribe
                         EnumInfo = enumInfo!,
                         Name = propertySymbol.Name,
                         IsNullable = propertySymbol.NullableAnnotation is NullableAnnotation.Annotated,
+                        IsPartial = isPartial,
                         IsStatic = propertySymbol.IsStatic,
                     });
 
@@ -365,7 +372,7 @@ namespace EnumScribe
 
         private static string GenerateEnumsSource(List<EnumInfo> enumInfos)
         {
-            StringBuilder sb = new();
+            StringBuilder sb = new(550);
 
             // Namespace, class headers
             sb.Append(
@@ -422,7 +429,7 @@ namespace EnumScribe.Generated.Enums
 
         private static string GeneratePartialsSource(List<TypeInfo> types)
         {
-            StringBuilder sb = new();
+            StringBuilder sb = new(280);
 
             // Required generator usings
             sb.AppendLine(
@@ -487,7 +494,14 @@ using EnumScribe.Generated.Enums;
                     {
                         foreach (var property in type.PropertyEnumMembers)
                         {
-                            WriteMemberText(sb, type, property, methodIndent);
+                            if (property.IsPartial)
+                            {
+                                WritePartialMemberText(sb, type, property, methodIndent);
+                            }
+                            else
+                            {
+                                WriteMemberText(sb, type, property, methodIndent);
+                            }
                         }
                     }
 
@@ -495,7 +509,14 @@ using EnumScribe.Generated.Enums;
                     {
                         foreach (var field in type.FieldEnumMembers)
                         {
-                            WriteMemberText(sb, type, field, methodIndent);
+                            if (field.IsPartial)
+                            {
+                                WritePartialMemberText(sb, type, field, methodIndent);
+                            }
+                            else
+                            {
+                                WriteMemberText(sb, type, field, methodIndent);
+                            }
                         }
                     }
 
@@ -534,6 +555,23 @@ using EnumScribe.Generated.Enums;
                     .Append(" => ")
                     .Append(member.Name)
                     .AppendLine(member.IsNullable ? "?.DescriptionText();" : ".DescriptionText();");
+            }
+
+            static void WritePartialMemberText(StringBuilder sb, TypeInfo type, MemberInfo member, string methodIndent)
+            {
+                sb
+                    .Append(methodIndent)
+                    .Append(member.Accessibility.ToText())
+                    .Append(' ')
+                    .Append(StaticText(type.IsStatic))
+                    .Append("partial ")
+                    .Append(member.IsNullable ? "string? " : "string ")
+                    .Append(member.Name)
+                    .Append(type.Suffix)
+                    .Append("() { return ")
+                    .Append(member.Name)
+                    .Append(member.IsNullable ? "?.DescriptionText();" : ".DescriptionText();")
+                    .AppendLine(" }");
             }
         }
 

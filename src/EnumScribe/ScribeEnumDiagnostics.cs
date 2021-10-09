@@ -53,9 +53,9 @@ namespace EnumScribe
         (
             id: "ES0004",
             title: "Remove redundant 'Scribe' attribute",
-            messageFormat: "Redundant 'Scribe' attribute on type '{0}'; type does not contain any enum properties",
+            messageFormat: "Redundant 'Scribe' attribute on type '{0}'; type does not contain any enum members",
             category: "EnumScribe.Redundancy",
-            defaultSeverity: DiagnosticSeverity.Hidden,
+            defaultSeverity: DiagnosticSeverity.Warning, // TODO: change to info.... y info no show :(
             isEnabledByDefault: true,
             helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0004.md"
         );
@@ -64,7 +64,7 @@ namespace EnumScribe
         (
             id: "ES0005",
             title: "Fix 'Scribe' naming collision",
-            messageFormat: "Property x could not be generated as it already exists",
+            messageFormat: "Property x could not be generated as it name already exists",
             category: "EnumScribe.Something",
             defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true,

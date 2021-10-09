@@ -22,25 +22,25 @@ namespace Samples
         //}
     }
 
-    //[Scribe("EditedSuffix", IncludeFields = true, AccessModifiers = AccessModifier.Public | AccessModifier.Private)]
+    [Scribe("EditedSuffix", IncludeFields = true, AccessModifiers = AccessModifier.Public | AccessModifier.Private)]
     public partial class Fish
     {
-        //[IgnoreScribe]
-        //public Fisherman ToIgnoreEnum { get; set; } = Fisherman.IgnoreCake;
+        [NoScribe]
+        public Fisherman ToIgnoreEnum { get; set; } = Fisherman.IgnoreCake;
 
         public Fisherman ShouldSeeProperty { get; set; } = Fisherman.PropertyCake;
 
         [NoScribe]
         public Fisherman ShouldSeeField = Fisherman.FieldCake;
 
-        //public Fisherman? NullableQMarkShouldSeeProperty { get; set; } = Fisherman.NullablePropertyCake;
-        //public Nullable<Fisherman> NullableVerboseShouldSeeProperty { get; set; } = Fisherman.NullablePropertyCake;
+        public Fisherman? NullableQMarkShouldSeeProperty { get; set; } = Fisherman.NullablePropertyCake;
+        public Nullable<Fisherman> NullableVerboseShouldSeeProperty { get; set; } = Fisherman.NullablePropertyCake;
 
-        //[ScribeEnum]
-        //public partial class FishyTest
-        //{
-        //    public Fisherman TestFishy { get; set; }
-        //}
+        [Scribe]
+        public partial class FishyTest
+        {
+            //public Fisherman TestFishy { get; set; }
+        }
 
         public enum Fisherman
         {
@@ -81,8 +81,9 @@ namespace Samples
         [Scribe]
         partial class ShouldAppearInsideShouldNotAppear
         {
+            //[ReScribe(nameof(FishDescription)]
             public Fisherman Fish { get; set; }
-            //public partial string FishDescription(); Support this.
+            public partial string FishDescription();
         }
 
         public enum Fisherman

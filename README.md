@@ -4,14 +4,13 @@
 
 ### V1.0
 
+* Fields (**MAYBE**)
 * Repeat sanity testing / bugsplatting
 * Error/Warning/Info (Partially)
   * Field|Property stray IgnoreScribe
 * Full Error/Warning/Info pages
 * Commenting
 * Doccommenting
-* Fields (**MAYBE**)
-* Support partial methods (Allow class to have `partial EnumDescription();` method)
 * Some samples
 * Real `README.md`
 
