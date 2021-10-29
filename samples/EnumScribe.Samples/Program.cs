@@ -9,8 +9,6 @@ namespace Samples
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            //var trout = new Trout();
-            //var suffix = trout.UnderscoreEnumProperty_Description;
         }
     }
 
@@ -18,7 +16,6 @@ namespace Samples
     {
         //public partial class FishyTest
         //{
-
         //}
     }
 
@@ -31,15 +28,21 @@ namespace Samples
         public Fisherman ShouldSeeProperty { get; set; } = Fisherman.PropertyCake;
 
         [NoScribe]
+        public Fisherman? NullableQMarkShouldSeeProperty { get; set; } = Fisherman.NullablePropertyCake;
+
+        [NoScribe]
+        public Nullable<Fisherman> NullableVerboseShouldSeeProperty { get; set; } = Fisherman.NullablePropertyCake;
+
         public Fisherman ShouldSeeField = Fisherman.FieldCake;
 
-        public Fisherman? NullableQMarkShouldSeeProperty { get; set; } = Fisherman.NullablePropertyCake;
-        public Nullable<Fisherman> NullableVerboseShouldSeeProperty { get; set; } = Fisherman.NullablePropertyCake;
+        public Fisherman? NullableQMarkShouldSeeField = Fisherman.NullablePropertyCake;
+
+        public Nullable<Fisherman> NullableVerboseShouldSeeField = Fisherman.NullablePropertyCake;
 
         [Scribe]
         public partial class FishyTest
         {
-            //public Fisherman TestFishy { get; set; }
+            public Fisherman TestFishy { get; set; }
         }
 
         public enum Fisherman
@@ -55,17 +58,17 @@ namespace Samples
         }
     }
 
-    //[ScribeEnum("_Description")]
-    //public partial class Trout
-    //{
-    //    public Fisherman UnderscoreEnumProperty { get; set; } = Fisherman.UnderscorePie;
+    [Scribe("_Description")]
+    public partial class Trout
+    {
+        public Fisherman UnderscoreEnumProperty { get; set; } = Fisherman.UnderscorePie;
 
-    //    public enum Fisherman
-    //    {
-    //        [Description("pie")]
-    //        UnderscorePie = 0,
-    //    }
-    //}
+        public enum Fisherman
+        {
+            [Description("pie")]
+            UnderscorePie = 0,
+        }
+    }
 
     //public class Cake<T>
     //{

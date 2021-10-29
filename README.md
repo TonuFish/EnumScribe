@@ -1,29 +1,47 @@
-# Coming Soon (TM)
+# EnumScribe
 
-## TODO List
+## Repo badges
+
+<>< ()( [][ {}{
+
+## What is
+
+<>< ()( [][ {}{
+
+## Target frameworks
+
+<>< ()( [][ {}{
+
+## Small sample
+
+<>< ()( [][ {}{
+
+## Roadmap
+
+<>< ()( [][ {}{
 
 ### V1.0
 
-* Fields (**MAYBE**)
-* Repeat sanity testing / bugsplatting
+* Repeat sanity testing / bugsplatting (tests? zzz)
 * Error/Warning/Info (Partially)
   * Field|Property stray IgnoreScribe
 * Full Error/Warning/Info pages
-* Commenting
-* Doccommenting
-* Some samples
-* Real `README.md`
+* Proper commenting
+* Doccommenting (internal)
+* Proper samples
+* Proper `README.md` + 'roadmap'
+* NuGet configuration
 
 ### V1.1
 
-* New attribute (#NAME) to manually override suffix on a property/field basis
 * Generic classes
 * Generic classes where T is an enum
+* New attribute (#NAME) to manually override suffix on a property/field basis
 
 ### V1.15
 
-* Localisation
 * Acknowledge (#NAME) attribute on property without the containing class requiring ScribeEnum
+* Diagnostics localisation
 
 ### V1.2
 
@@ -32,8 +50,9 @@
 
 ### V1.3
 
-* STRETCH: Handle derived description attributes (don't use constructor\[0])
+* STRETCH: Handle derived description attributes
 
-### Sometime
+### Soon(TM)
 
-* Tests
+* Proper tests
+* Benchmarking

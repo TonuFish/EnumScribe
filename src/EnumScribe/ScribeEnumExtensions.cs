@@ -32,8 +32,7 @@ namespace EnumScribe
             return accessibility;
         }
 
-        public static string ToText(this Accessibility accessibility)
-            => accessibility switch
+        public static string ToText(this Accessibility accessibility) => accessibility switch
             {
                 Accessibility.Private => "private",
                 Accessibility.ProtectedAndInternal => "private protected",
@@ -42,6 +41,13 @@ namespace EnumScribe
                 Accessibility.ProtectedOrInternal => "protected internal",
                 Accessibility.Public => "public",
                 // Default case should never be hit
+                _ => string.Empty,
+            };
+
+        public static string ToText(this TypeClassification typeClassification) => typeClassification switch
+            {
+                TypeClassification.Class => "class",
+                TypeClassification.Record => "record",
                 _ => string.Empty,
             };
     }

@@ -99,7 +99,7 @@ namespace EnumScribe
             title: "TODO",
             messageFormat: "Description attribute present, but description is null. Warn and use empty string.",
             category: "EnumScribe.Something",
-            defaultSeverity: DiagnosticSeverity.Warning,
+            defaultSeverity: DiagnosticSeverity.Info,
             isEnabledByDefault: true,
             helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0008.md"
         );

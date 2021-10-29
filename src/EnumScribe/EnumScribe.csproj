@@ -9,11 +9,13 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
+		<WarningLevel>5</WarningLevel>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<DebugType>pdbonly</DebugType>
 		<DebugSymbols>true</DebugSymbols>
+		<WarningLevel>5</WarningLevel>
 	</PropertyGroup>
 
 	<ItemGroup>

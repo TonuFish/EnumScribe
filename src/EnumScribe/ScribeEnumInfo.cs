@@ -18,14 +18,8 @@ namespace EnumScribe
         public string Namespace { get; set; } = null!;
         public bool ShouldScribe { get; set; }
         public string Suffix { get; set; } = null!;
-
-        /// <summary>
-        /// ("class" | "record") currently, TODO
-        /// </summary>
-        public string Type { get; set; } = null!;
-
-        public List<MemberInfo>? PropertyEnumMembers { get; set; }
-        public List<MemberInfo>? FieldEnumMembers { get; set; }
+        public TypeClassification Type { get; set; }
+        public List<MemberInfo>? EnumMembers { get; set; }
 
         public TypeInfo? ParentType { get; set; }
         public List<TypeInfo>? NestedTypes { get; set; }
@@ -34,7 +28,6 @@ namespace EnumScribe
         {
             get
             {
-                // Don't bother checking the lineage if this type isn't partial
                 var fullPartialLineage = IsPartial;
                 var parent = ParentType;
                 while (fullPartialLineage && parent != default)
@@ -65,5 +58,12 @@ namespace EnumScribe
         public string FullName { get; set; } = null!;
         public string Name { get; set; } = null!;
         public List<(string Name, string Description)> EnumMap { get; set; } = null!;
+    }
+
+    internal enum TypeClassification
+    {
+        Unknown = 0,
+        Class = 1,
+        Record = 2,
     }
 }
