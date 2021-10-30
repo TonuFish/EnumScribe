@@ -33,7 +33,7 @@ namespace EnumScribe
         public bool IncludeFields { get; set; } = false;
 
         /// <summary>
-        /// Gets the suffix text used by this instance of <see cref="ScribeAttribute"/>.
+        /// Gets the suffix text used by this instance of the <see cref="ScribeAttribute"/> class.
         /// </summary>
         public string Suffix { get; }
 

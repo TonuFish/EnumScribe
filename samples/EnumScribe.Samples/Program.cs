@@ -86,7 +86,7 @@ namespace Samples
         {
             //[ReScribe(nameof(FishDescription)]
             public Fisherman Fish { get; set; }
-            public partial string FishDescription();
+            protected partial string FishDescription();
         }
 
         public enum Fisherman

@@ -167,6 +167,7 @@ namespace EnumScribe
                 }
 
                 var memberNameWithSuffix = memberSymbolData.Symbol.Name + typeInfo.Suffix;
+                var accessibility = memberSymbolData.Symbol.DeclaredAccessibility;
                 var isPartial = false;
 
                 if (typeMemberNameToSymbol.TryGetValue(memberNameWithSuffix, out var existingSymbol))
@@ -176,6 +177,7 @@ namespace EnumScribe
                         if (m.IsPartialDefinition)
                         {
                             // No body to partial, all good
+                            accessibility = m.DeclaredAccessibility;
                             isPartial = true;
                         }
                         else if (m.PartialImplementationPart is not null)
@@ -216,7 +218,7 @@ namespace EnumScribe
                 typeInfo.EnumMembers ??= new();
                 typeInfo.EnumMembers.Add(new()
                 {
-                    Accessibility = memberSymbolData.Symbol.DeclaredAccessibility,
+                    Accessibility = accessibility,
                     EnumInfo = enumInfo!,
                     Name = memberSymbolData.Symbol.Name,
                     IsNullable = memberSymbolData.IsNullable,
