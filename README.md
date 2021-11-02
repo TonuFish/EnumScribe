@@ -8,10 +8,6 @@
 
 <>< ()( [][ {}{
 
-## Target frameworks
-
-<>< ()( [][ {}{
-
 ## Small sample
 
 <>< ()( [][ {}{
@@ -22,20 +18,22 @@
 
 ### V1.0
 
-* Repeat sanity testing / bugsplatting (tests? zzz)
+* Repeat sanity testing / bugsplatting
 * Error/Warning/Info (Partially)
-  * Field|Property stray IgnoreScribe
 * Full Error/Warning/Info pages
-* Proper commenting
-* Doccommenting (internal)
 * Proper samples
-* Proper `README.md` + 'roadmap'
+* Proper `README.md`
+* Icon
 * NuGet configuration
+* Badges
 
 ### V1.1
 
 * Generic classes
 * Generic classes where T is an enum
+* Field|Property stray IgnoreScribe
+* Tests
+* Benchmarking
 * New attribute (#NAME) to manually override suffix on a property/field basis
 
 ### V1.15
@@ -51,8 +49,3 @@
 ### V1.3
 
 * STRETCH: Handle derived description attributes
-
-### Soon(TM)
-
-* Proper tests
-* Benchmarking

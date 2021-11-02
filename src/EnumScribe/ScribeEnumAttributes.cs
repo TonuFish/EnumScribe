@@ -42,7 +42,7 @@ namespace EnumScribe
         /// <summary>
         /// Initializes a new instance of the <see cref="ScribeAttribute"/> class.
         /// </summary>
-        /// <param name="suffix">The suffix text appended to member names.</param>
+        /// <param name="suffix">The suffix text appended to member identifiers.</param>
         public ScribeAttribute(string suffix) => Suffix = suffix;
 
         public override bool Equals(object? obj) =>

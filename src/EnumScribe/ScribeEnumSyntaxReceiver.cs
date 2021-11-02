@@ -7,9 +7,7 @@ namespace EnumScribe
 {
     internal class ScribeEnumSyntaxReceiver : ISyntaxContextReceiver
     {
-        public List<INamedTypeSymbol> ClassSymbolsWithScribeAttribute { get; } = new();
-        //public List<StructDeclarationSyntax> StructsWithAttributes { get; } = new();
-        //public List<MemberDeclarationSyntax> MembersWithIgnoreScribeAttribute
+        public List<INamedTypeSymbol> ScribeAttributeSymbols { get; } = new();
 
         public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
         {
@@ -24,29 +22,9 @@ namespace EnumScribe
                 var symbol = (INamedTypeSymbol)context.SemanticModel.GetDeclaredSymbol(cds)!;
                 if (symbol.GetAttributes().Any(x => x.AttributeClass?.Name == nameof(ScribeAttribute)))
                 {
-                    ClassSymbolsWithScribeAttribute.Add(symbol);
+                    ScribeAttributeSymbols.Add(symbol);
                 }
             }
-            //else if (syntaxNode is StructDeclarationSyntax
-            //    {
-            //        AttributeLists:
-            //        {
-            //            Count: > 0
-            //        }
-            //    } sds)
-            //{
-            //    StructsWithAttributes.Add(sds);
-            //}
-            //else if (context.Node is PropertyDeclarationSyntax or FieldDeclarationSyntax
-            //    {
-            //        AttributeLists:
-            //        {
-            //            Count: > 0
-            //        }
-            //    } mds)
-            //{
-
-            //}
         }
     }
 }

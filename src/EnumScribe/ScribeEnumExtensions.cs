@@ -6,17 +6,6 @@ namespace EnumScribe
 {
     internal static class ScribeEnumExtensions
     {
-        private static readonly IReadOnlyDictionary<AccessModifier, Accessibility> AccessibilityByAccessModifier =
-            new Dictionary<AccessModifier, Accessibility>
-            {
-                { AccessModifier.Public, Accessibility.Public },
-                { AccessModifier.Private, Accessibility.Private },
-                { AccessModifier.Protected, Accessibility.Protected },
-                { AccessModifier.Internal, Accessibility.Internal },
-                { AccessModifier.ProtectedInternal, Accessibility.ProtectedOrInternal },
-                { AccessModifier.PrivateProtected, Accessibility.ProtectedAndInternal },
-            };
-
         public static HashSet<Accessibility> ToAccessibility(this AccessModifier accessModifier)
         {
             HashSet<Accessibility> accessibility = new() { Accessibility.Public };
@@ -25,7 +14,30 @@ namespace EnumScribe
             {
                 if (mod is not AccessModifier.All && (accessModifier & mod) > 0)
                 {
-                    accessibility.Add(AccessibilityByAccessModifier[mod]);
+                    switch (mod)
+                    {
+                        case AccessModifier.Public:
+                            accessibility.Add(Accessibility.Public);
+                            break;
+                        case AccessModifier.Private:
+                            accessibility.Add(Accessibility.Private);
+                            break;
+                        case AccessModifier.Protected:
+                            accessibility.Add(Accessibility.Protected);
+                            break;
+                        case AccessModifier.Internal:
+                            accessibility.Add(Accessibility.Internal);
+                            break;
+                        case AccessModifier.ProtectedInternal:
+                            accessibility.Add(Accessibility.ProtectedOrInternal);
+                            break;
+                        case AccessModifier.PrivateProtected:
+                            accessibility.Add(Accessibility.ProtectedAndInternal);
+                            break;
+                        default:
+                            // Default case should never happen
+                            break;
+                    }
                 }
             }
 
@@ -40,7 +52,7 @@ namespace EnumScribe
                 Accessibility.Internal => "internal",
                 Accessibility.ProtectedOrInternal => "protected internal",
                 Accessibility.Public => "public",
-                // Default case should never be hit
+                // Default case should never happen
                 _ => string.Empty,
             };
 
@@ -48,6 +60,7 @@ namespace EnumScribe
             {
                 TypeClassification.Class => "class",
                 TypeClassification.Record => "record",
+                // Default case should never happen
                 _ => string.Empty,
             };
     }

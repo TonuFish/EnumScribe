@@ -9,7 +9,7 @@ namespace EnumScribe
         public string FullName => $"{Namespace}.{Name}";
 
         /// <summary>
-        /// Defaults to <c>true</c>.
+        /// Defaults to <see langword="true"/>.
         /// </summary>
         public bool IsPartial { get; set; } = true;
 
@@ -19,11 +19,16 @@ namespace EnumScribe
         public bool ShouldScribe { get; set; }
         public string Suffix { get; set; } = null!;
         public TypeClassification Type { get; set; }
+
         public List<MemberInfo>? EnumMembers { get; set; }
 
         public TypeInfo? ParentType { get; set; }
         public List<TypeInfo>? NestedTypes { get; set; }
 
+        /// <summary>
+        /// <see langword="true"/> if the <see cref="INamedTypeSymbol"/> represented by this <see cref="TypeInfo"/>
+        /// and all enclosing classes are <see langword="partial"/>; otherwise <see langword="false"/>.
+        /// </summary>
         public bool HasFullPartialLineage
         {
             get
@@ -40,29 +45,27 @@ namespace EnumScribe
         }
     }
 
-    /// <summary>
-    /// Property currently, TODO.
-    /// </summary>
     internal class MemberInfo
     {
         public Accessibility Accessibility { get; set; }
-        public EnumInfo EnumInfo { get; set; } = null!;
-        public string Name { get; set; } = null!;
         public bool IsNullable { get; set; }
-        public bool IsPartial { get; set; }
+        public bool IsPartialMethod { get; set; }
         public bool IsStatic { get; set; }
+        public string Name { get; set; } = null!;
+
+        public EnumInfo EnumInfo { get; set; } = null!;
     }
 
     internal class EnumInfo
     {
         public string FullName { get; set; } = null!;
         public string Name { get; set; } = null!;
-        public List<(string Name, string Description)> EnumMap { get; set; } = null!;
+
+        public List<(string Name, string Description)> EnumNameDescriptionPairs { get; set; } = null!;
     }
 
     internal enum TypeClassification
     {
-        Unknown = 0,
         Class = 1,
         Record = 2,
     }
