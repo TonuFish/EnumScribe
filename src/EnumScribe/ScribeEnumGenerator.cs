@@ -283,11 +283,21 @@ namespace EnumScribe
                         }
                         else if (m.PartialImplementationPart is not null)
                         {
+                            _context.ReportDiagnostic(Diagnostic.Create(
+                                descriptor: ScribeEnumDiagnostics.ES0009,
+                                location: memberSymbolData.Symbol.Locations[0],
+                                memberSymbolData.Symbol.Name));
+
                             // Partial method with existing implementation, skip
                             continue;
                         }
                         else
                         {
+                            _context.ReportDiagnostic(Diagnostic.Create(
+                                descriptor: ScribeEnumDiagnostics.ES0010,
+                                location: memberSymbolData.Symbol.Locations[0],
+                                memberSymbolData.Symbol.Name));
+
                             // Non-partial method exists, skip
                             continue;
                         }
@@ -297,7 +307,7 @@ namespace EnumScribe
                         _context.ReportDiagnostic(Diagnostic.Create(
                             descriptor: ScribeEnumDiagnostics.ES0005,
                             location: memberSymbolData.Symbol.Locations[0],
-                            typeInfo.Name));
+                            memberSymbolData.Symbol.Name));
 
                         // Member name already in use by non-method symbol, skip
                         continue;
@@ -356,20 +366,20 @@ namespace EnumScribe
                     .FirstOrDefault(x => x.AttributeClass!.Name == nameof(DescriptionAttribute));
                 if (descriptionAttribute == default)
                 {
-                    // Missing DescriptionAttribute, use the member name
                     _context.ReportDiagnostic(Diagnostic.Create(
                         descriptor: ScribeEnumDiagnostics.ES0006,
                         location: enumSymbol.Locations[0]));
 
+                    // Missing DescriptionAttribute, use the member name
                     enumInfo.EnumNameDescriptionPairs.Add((enumSymbol.Name, enumSymbol.Name));
                 }
                 else if (descriptionAttribute.ConstructorArguments.Length == 0)
                 {
-                    // DescriptionAttribute present but no description set, use empty string
                     _context.ReportDiagnostic(Diagnostic.Create(
                         descriptor: ScribeEnumDiagnostics.ES0007,
                         location: enumSymbol.Locations[0]));
 
+                    // DescriptionAttribute present but no description set, use empty string
                     enumInfo.EnumNameDescriptionPairs.Add((enumSymbol.Name, string.Empty));
                 }
                 else
@@ -382,11 +392,11 @@ namespace EnumScribe
                     }
                     else
                     {
-                        // DescriptionAttribute present but description is null, use empty string
                         _context.ReportDiagnostic(Diagnostic.Create(
                             descriptor: ScribeEnumDiagnostics.ES0008,
                             location: enumSymbol.Locations[0]));
 
+                        // DescriptionAttribute present but description is null, use empty string
                         enumInfo.EnumNameDescriptionPairs.Add((enumSymbol.Name, string.Empty));
                     }
                 }

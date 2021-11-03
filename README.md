@@ -34,7 +34,7 @@
 * Field|Property stray IgnoreScribe
 * Tests
 * Benchmarking
-* New attribute (#NAME) to manually override suffix on a property/field basis
+* New attribute (#NAME) to manually override scribe rules on a property/field basis (suffix, accessibility)
 
 ### V1.15
 

@@ -12,7 +12,7 @@ namespace EnumScribe
 
             foreach (AccessModifier mod in Enum.GetValues(typeof(AccessModifier)))
             {
-                if (mod is not AccessModifier.All && (accessModifier & mod) > 0)
+                if ((accessModifier & mod) > 0 && mod is not AccessModifier.All)
                 {
                     switch (mod)
                     {

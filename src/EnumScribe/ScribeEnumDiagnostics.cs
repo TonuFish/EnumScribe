@@ -49,6 +49,9 @@ namespace EnumScribe
             helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0003.md"
         );
 
+        /// <summary>
+        /// Remove redundant scribe attribute.
+        /// </summary>
         internal static readonly DiagnosticDescriptor ES0004 = new
         (
             id: "ES0004",
@@ -60,11 +63,14 @@ namespace EnumScribe
             helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0004.md"
         );
 
+        /// <summary>
+        /// Fix scribe naming collision.
+        /// </summary>
         internal static readonly DiagnosticDescriptor ES0005 = new
         (
             id: "ES0005",
             title: "Fix 'Scribe' naming collision",
-            messageFormat: "Property x could not be generated as it name already exists",
+            messageFormat: "Member '{0}' could not be scribed as the nominated identifier is already in use",
             category: "EnumScribe.Something",
             defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true,
@@ -104,7 +110,32 @@ namespace EnumScribe
             helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0008.md"
         );
 
-        // INFO: Remove redundant NoScribe attribute x2 -- (property/field not an enum | enclosing type Non-Scribe)
-    }
+        /// <summary>
+        /// Fix scribe partial method collision.
+        /// </summary>
+        internal static readonly DiagnosticDescriptor ES0009 = new
+        (
+            id: "ES0009",
+            title: "Fix 'Scribe' partial method collision",
+            messageFormat: "Member '{0}' could not be scribed as the nominated partial method is already implemented",
+            category: "EnumScribe.Something",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true,
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0009.md"
+        );
 
+        /// <summary>
+        /// Fix scribe method naming collision.
+        /// </summary>
+        internal static readonly DiagnosticDescriptor ES0010 = new
+        (
+            id: "ES0010",
+            title: "Fix 'Scribe' method naming collision",
+            messageFormat: "Member '{0}' could not be scribed as the nominated identifier is already in use by a method",
+            category: "EnumScribe.Something",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true,
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0010.md"
+        );
+    }
 }
