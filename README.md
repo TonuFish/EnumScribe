@@ -29,15 +29,11 @@
 
 ### V1.1
 
-* Generic classes
 * Generic classes where T is an enum
 * Field|Property stray IgnoreScribe
 * Tests
 * Benchmarking
 * New attribute (#NAME) to manually override scribe rules on a property/field basis (suffix, accessibility)
-
-### V1.15
-
 * Acknowledge (#NAME) attribute on property without the containing class requiring ScribeEnum
 * Diagnostics localisation
 

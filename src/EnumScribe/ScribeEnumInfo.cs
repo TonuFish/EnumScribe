@@ -6,7 +6,8 @@ namespace EnumScribe
     internal class TypeInfo
     {
         public Accessibility Accessibility { get; set; }
-        public string FullName => $"{Namespace}.{Name}";
+        public string FullName => $"{Namespace}.{Name}{GenericSignature}";
+        public string? GenericSignature { get; set; }
 
         /// <summary>
         /// Defaults to <see langword="true"/>.
@@ -18,7 +19,7 @@ namespace EnumScribe
         public string Namespace { get; set; } = null!;
         public bool ShouldScribe { get; set; }
         public string Suffix { get; set; } = null!;
-        public TypeClassification Type { get; set; }
+        public Type Type { get; set; }
 
         public List<MemberInfo>? EnumMembers { get; set; }
 
@@ -64,7 +65,7 @@ namespace EnumScribe
         public List<(string Name, string Description)> EnumNameDescriptionPairs { get; set; } = null!;
     }
 
-    internal enum TypeClassification
+    internal enum Type
     {
         Class = 1,
         Record = 2,

@@ -9,89 +9,51 @@ namespace Samples
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
+            UseNamespaceEnumGeneric<int> q = new();
+            q.SeeProperty = NamespaceLevelEnum.FirstEntry;
         }
     }
 
-    public partial class Fish
+    public enum NamespaceLevelEnum
     {
-        //public partial class FishyTest
-        //{
-        //}
+        [Description("0th Entry")]
+        ZeroethEntry = 0,
+        [Description("1st Entry")]
+        FirstEntry = 1,
     }
 
-    [Scribe("EditedSuffix", IncludeFields = true, AccessModifiers = AccessModifier.Public | AccessModifier.Private)]
-    public partial class Fish
+    [Scribe]
+    public partial class UseNamespaceEnum
     {
-        [NoScribe]
-        public Fisherman ToIgnoreEnum { get; set; } = Fisherman.IgnoreCake;
+        public NamespaceLevelEnum SeeProperty { get; set; }
+        public NamespaceLevelEnum? SeePropertyNullable { get; set; }
+    }
 
-        public Fisherman ShouldSeeProperty { get; set; } = Fisherman.PropertyCake;
+    [Scribe]
+    public partial class UseNamespaceEnumGeneric<T>
+    {
+        public NamespaceLevelEnum SeeProperty { get; set; }
 
-        [NoScribe]
-        public Fisherman? NullableQMarkShouldSeeProperty { get; set; } = Fisherman.NullablePropertyCake;
+        public NamespaceLevelEnum SeePropertyDescription() => default;
 
-        [NoScribe]
-        public Nullable<Fisherman> NullableVerboseShouldSeeProperty { get; set; } = Fisherman.NullablePropertyCake;
+        public partial NamespaceLevelEnum SeePropertyDescription(int num);
 
-        public Fisherman ShouldSeeField = Fisherman.FieldCake;
+        public partial NamespaceLevelEnum SeePropertyDescription(int num, int num2);
 
-        public Fisherman? NullableQMarkShouldSeeField = Fisherman.NullablePropertyCake;
+        //public partial NamespaceLevelEnum SeePropertyDescription<GenericType>();
 
-        public Nullable<Fisherman> NullableVerboseShouldSeeField = Fisherman.NullablePropertyCake;
+        //public partial NamespaceLevelEnum SeePropertyDescription<GenericType, GenericTypeTwo>();
 
         [Scribe]
-        public partial class FishyTest
+        public partial class UseNamespaceEnumGenericNested<U, V>
         {
-            public Fisherman TestFishy { get; set; }
-        }
+            public NamespaceLevelEnum SeeProperty { get; set; }
 
-        public enum Fisherman
-        {
-            [Description("Ignore Cake.")]
-            IgnoreCake = 0,
-            [Description("Property Cake.")]
-            PropertyCake = 1,
-            [Description("Field Cake.")]
-            FieldCake = 2,
-            [Description("Nullable Property Cake.")]
-            NullablePropertyCake = 3,
-        }
-    }
+            public partial NamespaceLevelEnum SeePropertyDescription(int num);
 
-    [Scribe("_Description")]
-    public partial class Trout
-    {
-        public Fisherman UnderscoreEnumProperty { get; set; } = Fisherman.UnderscorePie;
+            //public partial NamespaceLevelEnum SeePropertyDescription<GenericType>();
 
-        public enum Fisherman
-        {
-            [Description("pie")]
-            UnderscorePie = 0,
-        }
-    }
-
-    //public class Cake<T>
-    //{
-    //    // Generics exist. Not making V1.
-
-    //    public T CakeProperty { get; set; }
-    //}
-
-    partial class ShouldNotAppear
-    {
-        public Fisherman NoAppear { get; set; } = Fisherman.Alpaca;
-
-        [Scribe]
-        partial class ShouldAppearInsideShouldNotAppear
-        {
-            //[ReScribe(nameof(FishDescription)]
-            public Fisherman Fish { get; set; }
-            protected partial string FishDescription();
-        }
-
-        public enum Fisherman
-        {
-            Alpaca = 0,
+            //public partial NamespaceLevelEnum SeePropertyDescription<GenericType, GenericTypeTwo>();
         }
     }
 }

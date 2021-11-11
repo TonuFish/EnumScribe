@@ -56,10 +56,10 @@ namespace EnumScribe
                 _ => string.Empty,
             };
 
-        public static string ToText(this TypeClassification typeClassification) => typeClassification switch
+        public static string ToText(this Type typeClassification) => typeClassification switch
             {
-                TypeClassification.Class => "class",
-                TypeClassification.Record => "record",
+                Type.Class => "class",
+                Type.Record => "record",
                 // Default case should never happen
                 _ => string.Empty,
             };

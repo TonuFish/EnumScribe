@@ -106,6 +106,35 @@ namespace EnumScribe
                     continue;
                 }
 
+                // TODO: START Remove this testing section
+                /*
+                    Implement partial methods that take 0 parameters and 0 arguments.
+                    
+                    CRITERIA
+                    * `partial`
+                    * NOT generic
+                    * Take 0 arguments
+                    * Must not have an implemented body
+                 */
+
+                var members = typeSymbol.GetMembers();
+
+                var test = typeSymbol.GetMembers()
+                    .GroupBy(x => x.Name)
+                    .ToDictionary(
+                        keySelector: x => x.First().Name,
+                        elementSelector: x =>
+                        {
+                            // Order by is method, is not generic, doesn't take arguments, First()
+                            if (x is IMethodSymbol m)
+                            {
+                            }
+                            return x.First();
+                        });
+
+                System.Diagnostics.Debugger.Break();
+                // TODO: FINISH Remove this testing section
+
                 Dictionary<string, ISymbol> typeMemberNameToSymbol = typeSymbol.GetMembers().ToDictionary(x => x.Name);
 
                 typeInfo.ShouldScribe = ProcessEnumMembers(typeEnumMemberSymbols, typeMemberNameToSymbol, typeInfo);
@@ -117,10 +146,11 @@ namespace EnumScribe
             var classInfo = new TypeInfo
             {
                 Accessibility = symbol.DeclaredAccessibility,
+                GenericSignature = GetGenericSignature(symbol),
                 IsStatic = symbol.IsStatic,
                 Name = symbol.Name,
                 Namespace = symbol.ContainingNamespace.ToDisplayString(),
-                Type = symbol.IsRecord ? TypeClassification.Record : TypeClassification.Class
+                Type = symbol.IsRecord ? Type.Record : Type.Class
             };
 
             if (((TypeDeclarationSyntax)symbol.DeclaringSyntaxReferences[0].GetSyntax())
@@ -225,14 +255,16 @@ namespace EnumScribe
             bool IsEnumMember<T>((T Symbol, ITypeSymbol Type, bool IsNullable) member) where T : ISymbol
                 => accessibility.Contains(member.Symbol.DeclaredAccessibility)
                     && (
-                        // Enum
-                        member.Type.TypeKind is TypeKind.Enum
-                        || (
-                            // Nullable<Enum>
-                            member.IsNullable
-                            && member.Type.TypeKind is TypeKind.Struct
-                            && ((INamedTypeSymbol)member.Type).TypeArguments
-                                .SingleOrDefault(y => y.TypeKind is TypeKind.Enum) != default
+                        member.Type is INamedTypeSymbol t
+                        && (
+                            // Enum
+                            t.TypeKind is TypeKind.Enum
+                            || (
+                                // Nullable<Enum>
+                                t.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T
+                                // One type arg is guaranteed by Nullable<T>
+                                && t.TypeArguments[0].TypeKind is TypeKind.Enum
+                            )
                         )
                     );
 
@@ -275,8 +307,19 @@ namespace EnumScribe
                 {
                     if (existingSymbol is IMethodSymbol m)
                     {
+                        if (m.IsGenericMethod)
+                        {
+                            // TODO: Diagnostic error
+                            System.Diagnostics.Debugger.Break();
+
+                            // We don't currently support generic method implementation, skip
+                            continue;
+                        }
+
                         if (m.IsPartialDefinition)
                         {
+                            // TODO: Diagnostic error - If it takes args, don't use it; continue
+
                             // Partial method without an implementation, scribe the body instead of a get-only property
                             accessibility = m.DeclaredAccessibility;
                             isPartialMethod = true;
@@ -403,6 +446,28 @@ namespace EnumScribe
             }
 
             return enumInfo;
+        }
+
+        private static string? GetGenericSignature(INamedTypeSymbol symbol)
+        {
+            if (symbol.IsGenericType == false) { return null; }
+
+            const string GenericSeparator = ", ";
+
+            StringBuilder sb = new(8);
+            sb.Append('<');
+
+            foreach (var p in symbol.TypeParameters)
+            {
+                sb.Append(p.Name);
+                sb.Append(GenericSeparator);
+            }
+
+            // Remove trailing separator
+            sb.Length -= GenericSeparator.Length;
+            sb.Append('>');
+
+            return sb.ToString();
         }
 
         private static bool IsValidIdentifierSuffix(ReadOnlySpan<char> suffix)
@@ -541,7 +606,8 @@ using EnumScribe.Generated.Enums;
                     .Append("partial ")
                     .Append(type.Type.ToText())
                     .Append(' ')
-                    .AppendLine(type.Name)
+                    .Append(type.Name)
+                    .AppendLine(type.GenericSignature)
                     .Append(classIndent)
                     .AppendLine("{");
 
