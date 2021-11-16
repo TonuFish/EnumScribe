@@ -32,13 +32,19 @@ namespace Samples
     [Scribe]
     public partial class UseNamespaceEnumGeneric<T>
     {
-        public NamespaceLevelEnum SeeProperty { get; set; }
+        public NamespaceLevelEnum? SeeProperty { get; set; }
 
-        public NamespaceLevelEnum SeePropertyDescription() => default;
+        public partial string SeePropertyDescription();
 
-        public partial NamespaceLevelEnum SeePropertyDescription(int num);
+        public partial string? SeePropertyDescription();
 
-        public partial NamespaceLevelEnum SeePropertyDescription(int num, int num2);
+        public partial string? SeePropertyDescription(int num);
+
+        public partial NamespaceLevelEnum SeePropertyDescription();
+
+        //public partial NamespaceLevelEnum SeePropertyDescription(int num);
+
+        //public partial NamespaceLevelEnum SeePropertyDescription(int num, int num2);
 
         //public partial NamespaceLevelEnum SeePropertyDescription<GenericType>();
 
@@ -47,9 +53,9 @@ namespace Samples
         [Scribe]
         public partial class UseNamespaceEnumGenericNested<U, V>
         {
-            public NamespaceLevelEnum SeeProperty { get; set; }
+            public NamespaceLevelEnum? SeeProperty { get; set; }
 
-            public partial NamespaceLevelEnum SeePropertyDescription(int num);
+            public partial string SeePropertyDescription();
 
             //public partial NamespaceLevelEnum SeePropertyDescription<GenericType>();
 

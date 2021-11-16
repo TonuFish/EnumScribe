@@ -106,38 +106,17 @@ namespace EnumScribe
                     continue;
                 }
 
-                // TODO: START Remove this testing section
-                /*
-                    Implement partial methods that take 0 parameters and 0 arguments.
-                    
-                    CRITERIA
-                    * `partial`
-                    * NOT generic
-                    * Take 0 arguments
-                    * Must not have an implemented body
-                 */
-
                 var members = typeSymbol.GetMembers();
 
-                var test = typeSymbol.GetMembers()
+#pragma warning disable RS1024 // Compare symbols correctly
+                var typeMemberNameToSymbols = typeSymbol.GetMembers()
                     .GroupBy(x => x.Name)
+#pragma warning restore RS1024 // Compare symbols correctly
                     .ToDictionary(
                         keySelector: x => x.First().Name,
-                        elementSelector: x =>
-                        {
-                            // Order by is method, is not generic, doesn't take arguments, First()
-                            if (x is IMethodSymbol m)
-                            {
-                            }
-                            return x.First();
-                        });
+                        elementSelector: x => x.AsEnumerable());
 
-                System.Diagnostics.Debugger.Break();
-                // TODO: FINISH Remove this testing section
-
-                Dictionary<string, ISymbol> typeMemberNameToSymbol = typeSymbol.GetMembers().ToDictionary(x => x.Name);
-
-                typeInfo.ShouldScribe = ProcessEnumMembers(typeEnumMemberSymbols, typeMemberNameToSymbol, typeInfo);
+                typeInfo.ShouldScribe = ProcessEnumMembers(typeEnumMemberSymbols, typeMemberNameToSymbols, typeInfo);
             }
         }
 
@@ -268,13 +247,15 @@ namespace EnumScribe
                         )
                     );
 
-            var typeEnumMemberSymbols = typeSymbol.GetMembers().OfType<IPropertySymbol>()
+            var typeEnumMemberSymbols = typeSymbol.GetMembers()
+                .OfType<IPropertySymbol>()
                 .Select(x => ((ISymbol)x, x.Type, x.NullableAnnotation is NullableAnnotation.Annotated))
                 .Where(IsEnumMember);
 
             if (includeFields)
             {
-                typeEnumMemberSymbols = typeSymbol.GetMembers().OfType<IFieldSymbol>()
+                typeEnumMemberSymbols = typeSymbol.GetMembers()
+                    .OfType<IFieldSymbol>()
                     .Select(x => (Field: (ISymbol)x, x.Type, x.NullableAnnotation is NullableAnnotation.Annotated))
                     // Auto-property backing fields are implicity declared, ignore
                     .Where(x => x.Field.IsImplicitlyDeclared == false && IsEnumMember(x))
@@ -286,10 +267,11 @@ namespace EnumScribe
 
         private bool ProcessEnumMembers(
             IEnumerable<(ISymbol Symbol, ITypeSymbol Type, bool IsNullable)> typeEnumMemberData,
-            Dictionary<string, ISymbol> typeMemberNameToSymbol,
+            Dictionary<string, IEnumerable<ISymbol>> typeMemberNameToSymbols,
             TypeInfo typeInfo)
         {
             var shouldScribe = false;
+            var stringSymbol = _context.Compilation.GetSpecialType(SpecialType.System_String);
 
             foreach (var memberSymbolData in typeEnumMemberData)
             {
@@ -303,47 +285,40 @@ namespace EnumScribe
                 var accessibility = memberSymbolData.Symbol.DeclaredAccessibility;
                 var isPartialMethod = false;
 
-                if (typeMemberNameToSymbol.TryGetValue(memberNameWithSuffix, out var existingSymbol))
+                if (typeMemberNameToSymbols.TryGetValue(memberNameWithSuffix, out var existingSymbols))
                 {
-                    if (existingSymbol is IMethodSymbol m)
+                    // TODO: Big cleanup in this section... lol fish.
+
+                    var fish = existingSymbols.FirstOrDefault(x => x is IMethodSymbol m
+                        // Unimplemented partial method with no type arguments, taking no parameters, returning a string or string?
+                        && m.IsPartialDefinition
+                        && m.PartialImplementationPart is null
+                        && m.IsGenericMethod == false
+                        && m.Parameters.IsEmpty
+                        && m.ReturnType.Equals(stringSymbol, SymbolEqualityComparer.Default)
+                        && m.ReturnNullableAnnotation is NullableAnnotation.None // TODO: Continue on this
+                        // Nullability should match the member in question (Type)
+                        // Need to consider how stuff works in a non-nullable context... Think it will just be "none", but not 100%
+                        // Enums aren't objects, so they should always have a NullableAnnotation of sorts
+                        // But I'm not sure what the string object will have
+
+                        // IS NONE OR THE SAME AS THE OTHER
+
+                        // NON NULLABLE CONTEXT:
+                        // object NA.None
+                        // If enum nullable -> 
+                        // NULLABLE CONTEXT:
+                        // NA.Annotated
+                        // NA.NotAnnotated
+                        // TODO
+                    );
+
+                    if (fish is not default(ISymbol))
                     {
-                        if (m.IsGenericMethod)
-                        {
-                            // TODO: Diagnostic error
-                            System.Diagnostics.Debugger.Break();
-
-                            // We don't currently support generic method implementation, skip
-                            continue;
-                        }
-
-                        if (m.IsPartialDefinition)
-                        {
-                            // TODO: Diagnostic error - If it takes args, don't use it; continue
-
-                            // Partial method without an implementation, scribe the body instead of a get-only property
-                            accessibility = m.DeclaredAccessibility;
-                            isPartialMethod = true;
-                        }
-                        else if (m.PartialImplementationPart is not null)
-                        {
-                            _context.ReportDiagnostic(Diagnostic.Create(
-                                descriptor: ScribeEnumDiagnostics.ES0009,
-                                location: memberSymbolData.Symbol.Locations[0],
-                                memberSymbolData.Symbol.Name));
-
-                            // Partial method with existing implementation, skip
-                            continue;
-                        }
-                        else
-                        {
-                            _context.ReportDiagnostic(Diagnostic.Create(
-                                descriptor: ScribeEnumDiagnostics.ES0010,
-                                location: memberSymbolData.Symbol.Locations[0],
-                                memberSymbolData.Symbol.Name));
-
-                            // Non-partial method exists, skip
-                            continue;
-                        }
+                        // TODO: Consider if anything else has to go in here as well
+                        // Partial method may be scribed instead of a get-only property
+                        accessibility = fish.DeclaredAccessibility;
+                        isPartialMethod = true;
                     }
                     else
                     {
@@ -352,11 +327,13 @@ namespace EnumScribe
                             location: memberSymbolData.Symbol.Locations[0],
                             memberSymbolData.Symbol.Name));
 
-                        // Member name already in use by non-method symbol, skip
+                        // Member name already in use by at least one other symbol, skip
+                        // Really, this is "can't find the correct sort of method overload OR can't in general"
                         continue;
                     }
                 }
 
+                // TODO: Double check this works correctly for enums... :s OR None? (is not NotAnnotated)
                 var enumFullName = memberSymbolData.Type.NullableAnnotation is NullableAnnotation.Annotated
                     ? memberSymbolData.Type.ToDisplayString().TrimEnd('?')
                     : memberSymbolData.Type.ToDisplayString();
@@ -383,7 +360,8 @@ namespace EnumScribe
                 if (isPartialMethod == false)
                 {
                     // Record the name of to-scribe property to prevent potential collisions
-                    typeMemberNameToSymbol.Add(memberNameWithSuffix, memberSymbolData.Symbol);
+                    // TODO: Clean up this mess now that it's IEnumerable
+                    typeMemberNameToSymbols.Add(memberNameWithSuffix, new[] { memberSymbolData.Symbol });
                 }
 
                 shouldScribe = true;
