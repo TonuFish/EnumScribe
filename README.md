@@ -16,6 +16,11 @@
 
 <>< ()( [][ {}{
 
+
+### TODO
+
+* Make sure that Enums file switches work on older language versions (EG. 4.6.2) - Unsure on LangVersion required
+
 ### V1.0
 
 * Repeat sanity testing / bugsplatting

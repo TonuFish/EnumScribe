@@ -55,7 +55,7 @@ namespace Samples
         {
             public NamespaceLevelEnum? SeeProperty { get; set; }
 
-            public partial string SeePropertyDescription();
+            public partial string? SeePropertyDescription();
 
             //public partial NamespaceLevelEnum SeePropertyDescription<GenericType>();
 

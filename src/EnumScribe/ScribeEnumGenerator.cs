@@ -287,36 +287,22 @@ namespace EnumScribe
 
                 if (typeMemberNameToSymbols.TryGetValue(memberNameWithSuffix, out var existingSymbols))
                 {
-                    // TODO: Big cleanup in this section... lol fish.
-
                     var fish = existingSymbols.FirstOrDefault(x => x is IMethodSymbol m
+                    // TODO: Commenting
                         // Unimplemented partial method with no type arguments, taking no parameters, returning a string or string?
                         && m.IsPartialDefinition
                         && m.PartialImplementationPart is null
                         && m.IsGenericMethod == false
                         && m.Parameters.IsEmpty
+                        && (m.ReturnNullableAnnotation is NullableAnnotation.None
+                            || m.ReturnNullableAnnotation == memberSymbolData.Type.NullableAnnotation)
                         && m.ReturnType.Equals(stringSymbol, SymbolEqualityComparer.Default)
-                        && m.ReturnNullableAnnotation is NullableAnnotation.None // TODO: Continue on this
-                        // Nullability should match the member in question (Type)
-                        // Need to consider how stuff works in a non-nullable context... Think it will just be "none", but not 100%
-                        // Enums aren't objects, so they should always have a NullableAnnotation of sorts
-                        // But I'm not sure what the string object will have
-
-                        // IS NONE OR THE SAME AS THE OTHER
-
-                        // NON NULLABLE CONTEXT:
-                        // object NA.None
-                        // If enum nullable -> 
-                        // NULLABLE CONTEXT:
-                        // NA.Annotated
-                        // NA.NotAnnotated
-                        // TODO
                     );
 
                     if (fish is not default(ISymbol))
                     {
                         // TODO: Consider if anything else has to go in here as well
-                        // Partial method may be scribed instead of a get-only property
+                        // Partial method will be scribed instead of a get-only property
                         accessibility = fish.DeclaredAccessibility;
                         isPartialMethod = true;
                     }
@@ -378,8 +364,8 @@ namespace EnumScribe
                 Name = symbol.Name,
             };
 
-            var enumSymbols = symbol.GetMembers().Where(x => x.Kind == SymbolKind.Field).Cast<IFieldSymbol>().ToList();
-            enumInfo.EnumNameDescriptionPairs = new(enumSymbols.Count);
+            var enumSymbols = symbol.GetMembers().OfType<IFieldSymbol>();
+            enumInfo.EnumNameDescriptionPairs = new(enumSymbols.Count());
 
             foreach (var enumSymbol in enumSymbols)
             {
