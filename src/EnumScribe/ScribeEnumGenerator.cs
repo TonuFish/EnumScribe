@@ -78,7 +78,8 @@ namespace EnumScribe
                     continue;
                 }
 
-                if (GetScribeArguments(typeSymbol, out var suffix, out var includeFields, out var accessibility)
+                if (GetScribeArguments(typeSymbol,
+                    out var suffix, out var includeFields, out var implementPartialMethods, out var accessibility)
                         == false)
                 {
                     // Invalid attribute argument[s], skip
@@ -86,6 +87,7 @@ namespace EnumScribe
                 }
 
                 typeInfo.Suffix = suffix;
+                typeInfo.ImplementPartialMethods = implementPartialMethods;
 
                 if (ProcessTypeLineage(typeSymbol, typeInfo) == false)
                 {
@@ -143,11 +145,13 @@ namespace EnumScribe
         }
 
         private bool GetScribeArguments(INamedTypeSymbol symbol,
-            out string suffix, out bool includeFields, out HashSet<Accessibility> accessibility)
+            out string suffix,
+            out bool includeFields, out bool implementPartialMethods, out HashSet<Accessibility> accessibility)
         {
-            suffix = ScribeAttribute.DefaultSuffix;
-            includeFields = false;
-            accessibility = new() { Accessibility.Public };
+            suffix = TypeInfo.DefaultSuffix;
+            includeFields = TypeInfo.DefaultIncludeFields;
+            implementPartialMethods = TypeInfo.DefaultImplementPartialMethods;
+            accessibility = TypeInfo.DefaultAccessibility;
 
             var attribute = symbol.GetAttributes().First(x => x.AttributeClass!.Name == nameof(ScribeAttribute));
             if (attribute.ConstructorArguments.Length == 1)
@@ -170,6 +174,9 @@ namespace EnumScribe
             {
                 switch (arg.Key)
                 {
+                    case nameof(ScribeAttribute.ImplementPartialMethods):
+                        implementPartialMethods = (bool)arg.Value.Value!;
+                        break;
                     case nameof(ScribeAttribute.IncludeFields):
                         includeFields = (bool)arg.Value.Value!;
                         break;
@@ -285,7 +292,8 @@ namespace EnumScribe
 
                 if (typeMemberNameToSymbols.TryGetValue(memberNameWithSuffix, out var existingSymbols))
                 {
-                    // TODO: If ignore partial methods, error + skip
+                    // A member with the chosen name already exists; this is only acceptable when it corresponds to a
+                    // valid partial method and the user has not opted out of implementing them.
 
                     // Search for a valid partial method symbol
                     var validSymbol = existingSymbols.FirstOrDefault(x => x is IMethodSymbol m
@@ -309,6 +317,18 @@ namespace EnumScribe
 
                     if (validSymbol is not default(ISymbol))
                     {
+                        if (typeInfo.ImplementPartialMethods == false)
+                        {
+                            // TODO: Report diagnostic: Valid partial method exists, but has been deliberately opted out
+
+                            //_context.ReportDiagnostic(Diagnostic.Create(
+                            //    descriptor: ScribeEnumDiagnostics.ES0005,
+                            //    location: memberSymbolData.Symbol.Locations[0],
+                            //    memberSymbolData.Symbol.Name));
+
+                            continue;
+                        }
+
                         // Partial method will be scribed instead of a get-only property
                         accessibility = validSymbol.DeclaredAccessibility;
                         isPartialMethod = true;

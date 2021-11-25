@@ -27,7 +27,10 @@ namespace EnumScribe
         /// </summary>
         public AccessModifier AccessModifiers { get; set; } = AccessModifier.Public;
 
-        // TODO: Ignore partial methods
+        /// <summary>
+        /// Indicates that valid partial methods should be implemented, otherwise resulting in a compilation error.
+        /// </summary>
+        public bool ImplementPartialMethods { get; set; } = true;
 
         /// <summary>
         /// Indicates that field members should be scribed.

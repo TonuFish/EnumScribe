@@ -5,9 +5,15 @@ namespace EnumScribe
 {
     internal class TypeInfo
     {
+        public const string DefaultSuffix = ScribeAttribute.DefaultSuffix;
+        public const bool DefaultImplementPartialMethods = true;
+        public const bool DefaultIncludeFields = false;
+        public static readonly HashSet<Accessibility> DefaultAccessibility = new() { Accessibility.Public, };
+
         public Accessibility Accessibility { get; set; }
         public string FullName => $"{Namespace}.{Name}{GenericSignature}";
         public string? GenericSignature { get; set; }
+        public bool ImplementPartialMethods { get; set; } = true;
 
         /// <summary>
         /// Defaults to <see langword="true"/>.

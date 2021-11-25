@@ -29,7 +29,7 @@ namespace Samples
         public NamespaceLevelEnum? SeePropertyNullable { get; set; }
     }
 
-    [Scribe]
+    [Scribe(ImplementPartialMethods = false)]
     public partial class UseNamespaceEnumGeneric<T>
     {
         public NamespaceLevelEnum? SeeProperty { get; set; }
