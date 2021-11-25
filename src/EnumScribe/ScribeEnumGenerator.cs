@@ -55,7 +55,7 @@ namespace EnumScribe
             foreach (var typeSymbol in scribedTypeSymbols)
             {
                 var typeInfo = _typeInfos.Find(x => x.FullName == typeSymbol.ToDisplayString());
-                if (typeInfo == default)
+                if (typeInfo is default(TypeInfo))
                 {
                     // Record unseen type
                     typeInfo = GetTypeInfo(typeSymbol);
@@ -105,8 +105,6 @@ namespace EnumScribe
                     // No enums in type that meet Scribe conditions, skip
                     continue;
                 }
-
-                var members = typeSymbol.GetMembers();
 
 #pragma warning disable RS1024 // Compare symbols correctly
                 var typeMemberNameToSymbols = typeSymbol.GetMembers()
@@ -195,7 +193,7 @@ namespace EnumScribe
             var parentSymbol = (INamedTypeSymbol)symbol.ContainingSymbol!;
             var parentFullName = parentSymbol.ToDisplayString();
             var parentInfo = _typeInfos.Find(x => x.FullName == parentFullName);
-            if (parentInfo != default)
+            if (parentInfo is not default(TypeInfo))
             {
                 // Parent type already recorded
                 parentInfo.NestedTypes ??= new();
@@ -230,7 +228,7 @@ namespace EnumScribe
             // This is a little clunky as the most specific shared interface between IPropertySymbol and IFieldSymbol
             // is ISymbol, which loses access to Type and NullableAnnotation members.
 
-            // Local func closes over accessibility
+            //! Local func closes over accessibility
             bool IsEnumMember<T>((T Symbol, ITypeSymbol Type, bool IsNullable) member) where T : ISymbol
                 => accessibility.Contains(member.Symbol.DeclaredAccessibility)
                     && (
@@ -287,23 +285,32 @@ namespace EnumScribe
 
                 if (typeMemberNameToSymbols.TryGetValue(memberNameWithSuffix, out var existingSymbols))
                 {
-                    var fish = existingSymbols.FirstOrDefault(x => x is IMethodSymbol m
-                    // TODO: Commenting
-                        // Unimplemented partial method with no type arguments, taking no parameters, returning a string or string?
+                    // TODO: If ignore partial methods, error + skip
+
+                    // Search for a valid partial method symbol
+                    var validSymbol = existingSymbols.FirstOrDefault(x => x is IMethodSymbol m
                         && m.IsPartialDefinition
                         && m.PartialImplementationPart is null
                         && m.IsGenericMethod == false
                         && m.Parameters.IsEmpty
-                        && (m.ReturnNullableAnnotation is NullableAnnotation.None
-                            || m.ReturnNullableAnnotation == memberSymbolData.Type.NullableAnnotation)
+                        // Method nullability is compatible; method cannot return a notnull string if member is nullable
+                        && (
+                            // If they match, all good
+                            m.ReturnNullableAnnotation == memberSymbolData.Type.NullableAnnotation
+                            || (
+                                // If they don't match, the only legal nullable permutation is member out of context
+                                // + method inside with nullable annotation.
+                                memberSymbolData.Type.NullableAnnotation is NullableAnnotation.None
+                                && m.ReturnNullableAnnotation is NullableAnnotation.Annotated
+                            ))
+                        // Method returns a string (nullable context independent)
                         && m.ReturnType.Equals(stringSymbol, SymbolEqualityComparer.Default)
                     );
 
-                    if (fish is not default(ISymbol))
+                    if (validSymbol is not default(ISymbol))
                     {
-                        // TODO: Consider if anything else has to go in here as well
                         // Partial method will be scribed instead of a get-only property
-                        accessibility = fish.DeclaredAccessibility;
+                        accessibility = validSymbol.DeclaredAccessibility;
                         isPartialMethod = true;
                     }
                     else
@@ -319,13 +326,12 @@ namespace EnumScribe
                     }
                 }
 
-                // TODO: Double check this works correctly for enums... :s OR None? (is not NotAnnotated)
                 var enumFullName = memberSymbolData.Type.NullableAnnotation is NullableAnnotation.Annotated
                     ? memberSymbolData.Type.ToDisplayString().TrimEnd('?')
                     : memberSymbolData.Type.ToDisplayString();
 
                 var enumInfo = _enumInfos.Find(x => x.FullName == enumFullName);
-                if (enumInfo == default)
+                if (enumInfo is default(EnumInfo))
                 {
                     // Record unseen enum
                     enumInfo = GetEnumInfo(memberSymbolData.Type);
@@ -345,8 +351,8 @@ namespace EnumScribe
 
                 if (isPartialMethod == false)
                 {
+                    // TODO: Clean up this dodgyness after the IEnumerable swap
                     // Record the name of to-scribe property to prevent potential collisions
-                    // TODO: Clean up this mess now that it's IEnumerable
                     typeMemberNameToSymbols.Add(memberNameWithSuffix, new[] { memberSymbolData.Symbol });
                 }
 
@@ -371,7 +377,7 @@ namespace EnumScribe
             {
                 var descriptionAttribute = enumSymbol.GetAttributes()
                     .FirstOrDefault(x => x.AttributeClass!.Name == nameof(DescriptionAttribute));
-                if (descriptionAttribute == default)
+                if (descriptionAttribute is default(AttributeData))
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
                         descriptor: ScribeEnumDiagnostics.ES0006,
@@ -533,7 +539,7 @@ using EnumScribe.Generated.Enums;
 
             // Reduce to base types (not nested), group by namespace
             var typesByNamespace = _typeInfos
-                .Where(x => x.ParentType == default && x.HasFullPartialLineage)
+                .Where(x => x.ParentType is default(TypeInfo) && x.HasFullPartialLineage)
                 .GroupBy(x => x.Namespace);
 
             foreach (var namespaceGroup in typesByNamespace)

@@ -34,13 +34,13 @@ namespace Samples
     {
         public NamespaceLevelEnum? SeeProperty { get; set; }
 
-        public partial string SeePropertyDescription();
+        //public partial string SeePropertyDescription();
 
         public partial string? SeePropertyDescription();
 
-        public partial string? SeePropertyDescription(int num);
+        //public partial string? SeePropertyDescription(int num);
 
-        public partial NamespaceLevelEnum SeePropertyDescription();
+        //public partial NamespaceLevelEnum SeePropertyDescription();
 
         //public partial NamespaceLevelEnum SeePropertyDescription(int num);
 

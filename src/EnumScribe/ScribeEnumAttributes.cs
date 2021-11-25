@@ -27,6 +27,8 @@ namespace EnumScribe
         /// </summary>
         public AccessModifier AccessModifiers { get; set; } = AccessModifier.Public;
 
+        // TODO: Ignore partial methods
+
         /// <summary>
         /// Indicates that field members should be scribed.
         /// </summary>
