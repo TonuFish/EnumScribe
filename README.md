@@ -16,10 +16,11 @@
 
 <>< ()( [][ {}{
 
-
 ### TODO
 
-* Make sure that Enums file switches work on older language versions (EG. 4.6.2) - Unsure on LangVersion required
+* Make sure JsonIgnore functions correctly for all permutations of framework + library
+* Remember nuspec System.Collections.Immutable mess when setting up packaging
+* SourceLink
 
 ### V1.0
 

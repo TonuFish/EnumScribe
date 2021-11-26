@@ -30,12 +30,24 @@ namespace EnumScribe
         /// <summary>
         /// Indicates that valid partial methods should be implemented, otherwise resulting in a compilation error.
         /// </summary>
-        public bool ImplementPartialMethods { get; set; } = true;
+        public bool ImplementPartialMethods { get; set; } = TypeInfo.DefaultImplementPartialMethods;
 
         /// <summary>
         /// Indicates that field members should be scribed.
         /// </summary>
-        public bool IncludeFields { get; set; } = false;
+        public bool IncludeFields { get; set; } = TypeInfo.DefaultIncludeFields;
+
+        /// <summary>
+        /// Indicates that all scribe generated properties will be declared with <c>JsonIgnore</c> attribute[s].
+        /// </summary>
+        /// <remarks>
+        /// Supported JSON libraries:
+        /// <list type="bullet">
+        /// <item><description>System.Text.Json</description></item>
+        /// <item><description>Json.NET (Newtonsoft)</description></item>
+        /// </list>
+        /// </remarks>
+        public bool JsonIgnore { get; set; } = false;
 
         /// <summary>
         /// Gets the suffix text used by this instance of the <see cref="ScribeAttribute"/> class.
@@ -52,8 +64,10 @@ namespace EnumScribe
 
         public override bool Equals(object? obj) =>
             obj is ScribeAttribute o
-            && o.IncludeFields == IncludeFields
             && o.AccessModifiers == AccessModifiers
+            && o.ImplementPartialMethods == ImplementPartialMethods
+            && o.IncludeFields == IncludeFields
+            && o.JsonIgnore == JsonIgnore
             && o.Suffix == Suffix;
 
         /// <summary>

@@ -8,6 +8,10 @@ namespace EnumScribe
         public const string DefaultSuffix = ScribeAttribute.DefaultSuffix;
         public const bool DefaultImplementPartialMethods = true;
         public const bool DefaultIncludeFields = false;
+        public const bool DefaultJsonIgnoreNewtonsoft = false;
+        public const bool DefaultJsonIgnoreSystem = false;
+        public const string JsonIgnoreNewtonsoftAttribute = "Newtonsoft.Json.JsonIgnoreAttribute";
+        public const string JsonIgnoreSystemAttribute = "System.Text.Json.Serialization.JsonIgnoreAttribute";
         public static readonly HashSet<Accessibility> DefaultAccessibility = new() { Accessibility.Public, };
 
         public Accessibility Accessibility { get; set; }
@@ -21,6 +25,8 @@ namespace EnumScribe
         public bool IsPartial { get; set; } = true;
 
         public bool IsStatic { get; set; }
+        public bool JsonIgnoreNewtonsoft { get; set; }
+        public bool JsonIgnoreSystem { get; set; }
         public string Name { get; set; } = null!;
         public string Namespace { get; set; } = null!;
         public bool ShouldScribe { get; set; }

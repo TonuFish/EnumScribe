@@ -22,14 +22,14 @@ namespace Samples
         FirstEntry = 1,
     }
 
-    [Scribe]
+    [Scribe(JsonIgnore = true)]
     public partial class UseNamespaceEnum
     {
         public NamespaceLevelEnum SeeProperty { get; set; }
         public NamespaceLevelEnum? SeePropertyNullable { get; set; }
     }
 
-    [Scribe(ImplementPartialMethods = false)]
+    [Scribe]
     public partial class UseNamespaceEnumGeneric<T>
     {
         public NamespaceLevelEnum? SeeProperty { get; set; }

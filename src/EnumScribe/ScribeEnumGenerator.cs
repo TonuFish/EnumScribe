@@ -33,6 +33,10 @@ namespace EnumScribe
                 return;
             }
 
+            //! EXTERNAL PROJECT DEBUGGING
+            //System.Diagnostics.Debugger.Launch();
+            //System.Diagnostics.Debugger.Break();
+
             _context = context;
             ParseScribedSymbols(receiver.ScribeAttributeSymbols);
 
@@ -79,7 +83,8 @@ namespace EnumScribe
                 }
 
                 if (GetScribeArguments(typeSymbol,
-                    out var suffix, out var includeFields, out var implementPartialMethods, out var accessibility)
+                    out var suffix, out var includeFields, out var implementPartialMethods,
+                    out var jsonIgnoreNewtonsoft, out var jsonIgnoreSystem, out var accessibility)
                         == false)
                 {
                     // Invalid attribute argument[s], skip
@@ -88,6 +93,8 @@ namespace EnumScribe
 
                 typeInfo.Suffix = suffix;
                 typeInfo.ImplementPartialMethods = implementPartialMethods;
+                typeInfo.JsonIgnoreNewtonsoft = jsonIgnoreNewtonsoft;
+                typeInfo.JsonIgnoreSystem = jsonIgnoreSystem;
 
                 if (ProcessTypeLineage(typeSymbol, typeInfo) == false)
                 {
@@ -108,10 +115,8 @@ namespace EnumScribe
                     continue;
                 }
 
-#pragma warning disable RS1024 // Compare symbols correctly
                 var typeMemberNameToSymbols = typeSymbol.GetMembers()
                     .GroupBy(x => x.Name)
-#pragma warning restore RS1024 // Compare symbols correctly
                     .ToDictionary(
                         keySelector: x => x.First().Name,
                         elementSelector: x => x.AsEnumerable());
@@ -146,11 +151,15 @@ namespace EnumScribe
 
         private bool GetScribeArguments(INamedTypeSymbol symbol,
             out string suffix,
-            out bool includeFields, out bool implementPartialMethods, out HashSet<Accessibility> accessibility)
+            out bool includeFields, out bool implementPartialMethods,
+            out bool jsonIgnoreNewtonsoft, out bool jsonIgnoreSystem,
+            out HashSet<Accessibility> accessibility)
         {
             suffix = TypeInfo.DefaultSuffix;
             includeFields = TypeInfo.DefaultIncludeFields;
             implementPartialMethods = TypeInfo.DefaultImplementPartialMethods;
+            jsonIgnoreNewtonsoft = TypeInfo.DefaultJsonIgnoreNewtonsoft;
+            jsonIgnoreSystem = TypeInfo.DefaultJsonIgnoreSystem;
             accessibility = TypeInfo.DefaultAccessibility;
 
             var attribute = symbol.GetAttributes().First(x => x.AttributeClass!.Name == nameof(ScribeAttribute));
@@ -177,9 +186,24 @@ namespace EnumScribe
                     case nameof(ScribeAttribute.ImplementPartialMethods):
                         implementPartialMethods = (bool)arg.Value.Value!;
                         break;
+
                     case nameof(ScribeAttribute.IncludeFields):
                         includeFields = (bool)arg.Value.Value!;
                         break;
+
+                    case nameof(ScribeAttribute.JsonIgnore):
+                        var system = _context.Compilation.GetTypeByMetadataName(TypeInfo.JsonIgnoreSystemAttribute);
+                        var newtonsoft = _context.Compilation.GetTypeByMetadataName(TypeInfo.JsonIgnoreNewtonsoftAttribute);
+                        if (system is not default(INamedTypeSymbol))
+                        {
+                            jsonIgnoreSystem = true;
+                        }
+                        if (newtonsoft is not default(INamedTypeSymbol))
+                        {
+                            jsonIgnoreNewtonsoft = true;
+                        }
+                        break;
+
                     case nameof(ScribeAttribute.AccessModifiers):
                         var accessModifiers = (AccessModifier)arg.Value.Value!;
                         accessibility = accessModifiers.ToAccessibility();
@@ -609,6 +633,25 @@ using EnumScribe.Generated.Enums;
                     {
                         foreach (var member in type.EnumMembers)
                         {
+                            if (member.IsPartialMethod == false)
+                            {
+                                if (type.JsonIgnoreNewtonsoft)
+                                {
+                                    sb
+                                        .Append(methodIndent)
+                                        .Append('[')
+                                        .Append(TypeInfo.JsonIgnoreNewtonsoftAttribute)
+                                        .AppendLine("]");
+                                }
+                                if (type.JsonIgnoreSystem)
+                                {
+                                    sb
+                                        .Append(methodIndent)
+                                        .Append('[')
+                                        .Append(TypeInfo.JsonIgnoreSystemAttribute)
+                                        .AppendLine("]");
+                                }
+                            }
                             WriteMemberText(sb, type, member, methodIndent);
                         }
                     }
