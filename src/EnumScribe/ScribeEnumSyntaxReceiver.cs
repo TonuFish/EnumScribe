@@ -11,15 +11,9 @@ namespace EnumScribe
 
         public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
         {
-            if (context.Node is ClassDeclarationSyntax
-                {
-                    AttributeLists:
-                    {
-                        Count: > 0
-                    }
-                } cds)
+            if (context.Node is TypeDeclarationSyntax tds && tds.AttributeLists.Count > 0)
             {
-                var symbol = (INamedTypeSymbol)context.SemanticModel.GetDeclaredSymbol(cds)!;
+                var symbol = (INamedTypeSymbol)context.SemanticModel.GetDeclaredSymbol(tds)!;
                 if (symbol.GetAttributes().Any(x => x.AttributeClass?.Name == nameof(ScribeAttribute)))
                 {
                     ScribeAttributeSymbols.Add(symbol);
