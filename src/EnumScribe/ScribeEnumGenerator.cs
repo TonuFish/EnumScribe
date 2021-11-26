@@ -33,9 +33,14 @@ namespace EnumScribe
                 return;
             }
 
+#if DEBUG
             //! EXTERNAL PROJECT DEBUGGING
-            //System.Diagnostics.Debugger.Launch();
-            //System.Diagnostics.Debugger.Break();
+            //if (System.Diagnostics.Debugger.IsAttached == false)
+            //{
+                //System.Diagnostics.Debugger.Launch();
+                //System.Diagnostics.Debugger.Break();
+            //}
+#endif
 
             _context = context;
             ParseScribedSymbols(receiver.ScribeAttributeSymbols);
@@ -186,11 +191,9 @@ namespace EnumScribe
                     case nameof(ScribeAttribute.ImplementPartialMethods):
                         implementPartialMethods = (bool)arg.Value.Value!;
                         break;
-
                     case nameof(ScribeAttribute.IncludeFields):
                         includeFields = (bool)arg.Value.Value!;
                         break;
-
                     case nameof(ScribeAttribute.JsonIgnore):
                         var system = _context.Compilation.GetTypeByMetadataName(TypeInfo.JsonIgnoreSystemAttribute);
                         var newtonsoft = _context.Compilation.GetTypeByMetadataName(TypeInfo.JsonIgnoreNewtonsoftAttribute);
@@ -203,7 +206,6 @@ namespace EnumScribe
                             jsonIgnoreNewtonsoft = true;
                         }
                         break;
-
                     case nameof(ScribeAttribute.AccessModifiers):
                         var accessModifiers = (AccessModifier)arg.Value.Value!;
                         accessibility = accessModifiers.ToAccessibility();
@@ -251,7 +253,7 @@ namespace EnumScribe
             return ProcessTypeLineage(parentSymbol, parentInfo);
         }
 
-        private IEnumerable<(ISymbol Symbol, ITypeSymbol Type, bool IsNullable)> GetEnumMembers(
+        private IEnumerable<(ISymbol Symbol, INamedTypeSymbol Type, bool IsNullable)> GetEnumMembers(
             INamedTypeSymbol typeSymbol,
             bool includeFields,
             HashSet<Accessibility> accessibility)
@@ -260,7 +262,7 @@ namespace EnumScribe
             // is ISymbol, which loses access to Type and NullableAnnotation members.
 
             //! Local func closes over accessibility
-            bool IsEnumMember<T>((T Symbol, ITypeSymbol Type, bool IsNullable) member) where T : ISymbol
+            bool IsEnumMember<T>((T Symbol, INamedTypeSymbol Type, bool IsNullable) member) where T : ISymbol
                 => accessibility.Contains(member.Symbol.DeclaredAccessibility)
                     && (
                         member.Type is INamedTypeSymbol t
@@ -278,14 +280,15 @@ namespace EnumScribe
 
             var typeEnumMemberSymbols = typeSymbol.GetMembers()
                 .OfType<IPropertySymbol>()
-                .Select(x => ((ISymbol)x, x.Type, x.NullableAnnotation is NullableAnnotation.Annotated))
+                .Select(x => ((ISymbol)x, (INamedTypeSymbol)x.Type, x.NullableAnnotation is NullableAnnotation.Annotated))
                 .Where(IsEnumMember);
 
             if (includeFields)
             {
                 typeEnumMemberSymbols = typeSymbol.GetMembers()
                     .OfType<IFieldSymbol>()
-                    .Select(x => (Field: (ISymbol)x, x.Type, x.NullableAnnotation is NullableAnnotation.Annotated))
+                    .Select(x =>
+                        (Field: (ISymbol)x, (INamedTypeSymbol)x.Type, x.NullableAnnotation is NullableAnnotation.Annotated))
                     // Auto-property backing fields are implicity declared, ignore
                     .Where(x => x.Field.IsImplicitlyDeclared == false && IsEnumMember(x))
                     .Concat(typeEnumMemberSymbols);
@@ -295,7 +298,7 @@ namespace EnumScribe
         }
 
         private bool ProcessEnumMembers(
-            IEnumerable<(ISymbol Symbol, ITypeSymbol Type, bool IsNullable)> typeEnumMemberData,
+            IEnumerable<(ISymbol Symbol, INamedTypeSymbol Type, bool IsNullable)> typeEnumMemberData,
             Dictionary<string, IEnumerable<ISymbol>> typeMemberNameToSymbols,
             TypeInfo typeInfo)
         {
@@ -395,8 +398,7 @@ namespace EnumScribe
 
                 if (isPartialMethod == false)
                 {
-                    // TODO: Clean up this dodgyness after the IEnumerable swap
-                    // Record the name of to-scribe property to prevent potential collisions
+                    // Record the name of the scribed property to prevent potential collisions
                     typeMemberNameToSymbols.Add(memberNameWithSuffix, new[] { memberSymbolData.Symbol });
                 }
 
@@ -406,8 +408,13 @@ namespace EnumScribe
             return shouldScribe;
         }
 
-        private EnumInfo GetEnumInfo(ITypeSymbol symbol)
+        private EnumInfo GetEnumInfo(INamedTypeSymbol symbol)
         {
+            if (symbol.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T)
+            {
+                symbol = (INamedTypeSymbol)symbol.TypeArguments[0];
+            }
+
             var enumInfo = new EnumInfo
             {
                 FullName = symbol.ToDisplayString(),
