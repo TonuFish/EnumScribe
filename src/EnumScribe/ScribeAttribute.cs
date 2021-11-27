@@ -1,6 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
-using System;
+﻿using System;
 using System.ComponentModel;
+using static EnumScribe.EnumScribeConsts;
 
 namespace EnumScribe
 {
@@ -30,12 +30,12 @@ namespace EnumScribe
         /// <summary>
         /// Indicates that valid partial methods should be implemented, otherwise resulting in a compilation error.
         /// </summary>
-        public bool ImplementPartialMethods { get; set; } = TypeInfo.DefaultImplementPartialMethods;
+        public bool ImplementPartialMethods { get; set; } = Defaults.ImplementPartialMethods;
 
         /// <summary>
         /// Indicates that field members should be scribed.
         /// </summary>
-        public bool IncludeFields { get; set; } = TypeInfo.DefaultIncludeFields;
+        public bool IncludeFields { get; set; } = Defaults.IncludeFields;
 
         /// <summary>
         /// Indicates that all scribe generated properties will be declared with <c>JsonIgnore</c> attribute[s].
@@ -43,8 +43,8 @@ namespace EnumScribe
         /// <remarks>
         /// Supported JSON libraries:
         /// <list type="bullet">
-        /// <item><description>System.Text.Json</description></item>
-        /// <item><description>Json.NET (Newtonsoft)</description></item>
+        ///     <item><description>System.Text.Json</description></item>
+        ///     <item><description>Json.NET (Newtonsoft)</description></item>
         /// </list>
         /// </remarks>
         public bool JsonIgnore { get; set; } = false;
@@ -62,6 +62,7 @@ namespace EnumScribe
         /// <param name="suffix">The suffix text appended to member identifiers.</param>
         public ScribeAttribute(string suffix) => Suffix = suffix;
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj) =>
             obj is ScribeAttribute o
             && o.AccessModifiers == AccessModifiers
@@ -71,67 +72,14 @@ namespace EnumScribe
             && o.Suffix == Suffix;
 
         /// <summary>
-        /// Hash uses <see cref="Suffix"/> only.
+        /// Returns the hash code for this instance; equivalent to the <see cref="Suffix"/> hash code.
         /// </summary>
+        /// <returns>
+        /// A 32-bit signed integer hash code.
+        /// </returns>
         public override int GetHashCode() => Suffix.GetHashCode();
 
+        /// <inheritdoc/>
         public override bool IsDefaultAttribute() => Equals(Default);
-    }
-
-    /// <summary>
-    /// Specifies member accessibility modifiers.
-    /// </summary>
-    /// <seealso cref="Accessibility"/>
-    [Flags]
-    public enum AccessModifier
-    {
-        /// <summary>
-        /// <see langword="public"/> accessibility.
-        /// </summary>
-        /// <seealso cref="Accessibility.Public"/>
-        Public = 0,
-
-        /// <summary>
-        /// <see langword="private"/> accessibility.
-        /// </summary>
-        /// <seealso cref="Accessibility.Private"/>
-        Private = 1,
-
-        /// <summary>
-        /// <see langword="protected"/> accessibility.
-        /// </summary>
-        /// <seealso cref="Accessibility.Protected"/>
-        Protected = 2,
-
-        /// <summary>
-        /// <see langword="internal"/> accessibility.
-        /// </summary>
-        /// <seealso cref="Accessibility.Internal"/>
-        Internal = 4,
-
-        /// <summary>
-        /// <see langword="protected"/> <see langword="internal"/> accessibility.
-        /// </summary>
-        /// <seealso cref="Accessibility.ProtectedOrInternal"/>
-        ProtectedInternal = 8,
-
-        /// <summary>
-        /// <see langword="private"/> <see langword="protected"/> accessibility.
-        /// </summary>
-        /// <seealso cref="Accessibility.ProtectedAndInternal"/>
-        PrivateProtected = 16,
-
-        /// <summary>
-        /// Allows all accessibilities.
-        /// </summary>
-        All = Public | Private | Protected | Internal | ProtectedInternal | PrivateProtected,
-    }
-
-    /// <summary>
-    /// Prevents this member from being scribed. This class cannot be inherited.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-    public sealed class NoScribeAttribute : Attribute
-    {
     }
 }

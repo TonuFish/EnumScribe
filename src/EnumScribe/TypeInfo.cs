@@ -5,15 +5,6 @@ namespace EnumScribe
 {
     internal class TypeInfo
     {
-        public const string DefaultSuffix = ScribeAttribute.DefaultSuffix;
-        public const bool DefaultImplementPartialMethods = true;
-        public const bool DefaultIncludeFields = false;
-        public const bool DefaultJsonIgnoreNewtonsoft = false;
-        public const bool DefaultJsonIgnoreSystem = false;
-        public const string JsonIgnoreNewtonsoftAttribute = "Newtonsoft.Json.JsonIgnoreAttribute";
-        public const string JsonIgnoreSystemAttribute = "System.Text.Json.Serialization.JsonIgnoreAttribute";
-        public static readonly HashSet<Accessibility> DefaultAccessibility = new() { Accessibility.Public, };
-
         public Accessibility Accessibility { get; set; }
         public string FullName => $"{Namespace}.{Name}{GenericSignature}";
         public string? GenericSignature { get; set; }
@@ -33,10 +24,13 @@ namespace EnumScribe
         public string Suffix { get; set; } = null!;
         public Type Type { get; set; }
 
+        /// <summary>
+        /// Property | Field | Method
+        /// </summary>
         public List<MemberInfo>? EnumMembers { get; set; }
 
-        public TypeInfo? ParentType { get; set; }
         public List<TypeInfo>? NestedTypes { get; set; }
+        public TypeInfo? ParentType { get; set; }
 
         /// <summary>
         /// <see langword="true"/> if the <see cref="INamedTypeSymbol"/> represented by this <see cref="TypeInfo"/>
@@ -56,25 +50,6 @@ namespace EnumScribe
                 return fullPartialLineage;
             }
         }
-    }
-
-    internal class MemberInfo
-    {
-        public Accessibility Accessibility { get; set; }
-        public bool IsNullable { get; set; }
-        public bool IsPartialMethod { get; set; }
-        public bool IsStatic { get; set; }
-        public string Name { get; set; } = null!;
-
-        public EnumInfo EnumInfo { get; set; } = null!;
-    }
-
-    internal class EnumInfo
-    {
-        public string FullName { get; set; } = null!;
-        public string Name { get; set; } = null!;
-
-        public List<(string Name, string Description)> EnumNameDescriptionPairs { get; set; } = null!;
     }
 
     internal enum Type

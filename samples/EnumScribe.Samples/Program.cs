@@ -10,20 +10,24 @@ namespace Samples
         {
             Console.WriteLine("Hello World!");
             UseNamespaceEnumGeneric<int> q = new();
-            q.SeeProperty = NamespaceLevelEnum.FirstEntry;
+            q.SeeProperty = NamespaceLevelEnum.ZeroethEntry | NamespaceLevelEnum.FirstEntry;
+            Console.WriteLine($"Value: {q.SeePropertyDescription()}");
         }
     }
 
+    [Flags]
     public enum NamespaceLevelEnum
     {
         [Description("0th Entry")]
         ZeroethEntry = 0,
         [Description("1st Entry")]
         FirstEntry = 1,
+        [Description("2nd Entry")]
+        SecondEntry = 2,
     }
 
     [Scribe(JsonIgnore = true)]
-    public partial class UseNamespaceEnum
+    public partial record UseNamespaceEnum
     {
         public NamespaceLevelEnum SeeProperty { get; set; }
         public NamespaceLevelEnum? SeePropertyNullable { get; set; }

@@ -6,11 +6,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Globalization;
+using static EnumScribe.EnumScribeConsts;
 
 namespace EnumScribe
 {
     [Generator(LanguageNames.CSharp)]
-    internal sealed class ScribeEnumGenerator : ISourceGenerator
+    internal sealed class EnumScribeGenerator : ISourceGenerator
     {
         private const string EnumsHintName = "Enums.EnumScribe.g.cs";
         private const string PartialsHintName = "Partials.EnumScribe.g.cs";
@@ -23,12 +24,12 @@ namespace EnumScribe
 
         public void Initialize(GeneratorInitializationContext context)
         {
-            context.RegisterForSyntaxNotifications(() => new ScribeEnumSyntaxReceiver());
+            context.RegisterForSyntaxNotifications(() => new EnumScribeSyntaxReceiver());
         }
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.SyntaxContextReceiver is not ScribeEnumSyntaxReceiver receiver)
+            if (context.SyntaxContextReceiver is not EnumScribeSyntaxReceiver receiver)
             {
                 return;
             }
@@ -73,7 +74,7 @@ namespace EnumScribe
                     if (typeInfo.IsPartial == false)
                     {
                         _context.ReportDiagnostic(Diagnostic.Create(
-                            descriptor: ScribeEnumDiagnostics.ES0002,
+                            descriptor: EnumScribeDiagnostics.ES0002,
                             location: typeSymbol.Locations[0],
                             typeInfo.Name));
 
@@ -112,7 +113,7 @@ namespace EnumScribe
                 if (typeEnumMemberSymbols.Any() == false)
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        descriptor: ScribeEnumDiagnostics.ES0004,
+                        descriptor: EnumScribeDiagnostics.ES0004,
                         location: typeSymbol.Locations[0], // TODO: Correct location target
                         typeInfo.Name));
 
@@ -160,12 +161,12 @@ namespace EnumScribe
             out bool jsonIgnoreNewtonsoft, out bool jsonIgnoreSystem,
             out HashSet<Accessibility> accessibility)
         {
-            suffix = TypeInfo.DefaultSuffix;
-            includeFields = TypeInfo.DefaultIncludeFields;
-            implementPartialMethods = TypeInfo.DefaultImplementPartialMethods;
-            jsonIgnoreNewtonsoft = TypeInfo.DefaultJsonIgnoreNewtonsoft;
-            jsonIgnoreSystem = TypeInfo.DefaultJsonIgnoreSystem;
-            accessibility = TypeInfo.DefaultAccessibility;
+            suffix = Defaults.Suffix;
+            includeFields = Defaults.IncludeFields;
+            implementPartialMethods = Defaults.ImplementPartialMethods;
+            jsonIgnoreNewtonsoft = Defaults.JsonIgnoreNewtonsoft;
+            jsonIgnoreSystem = Defaults.JsonIgnoreSystem;
+            accessibility = Defaults.MutableAccessibility();
 
             var attribute = symbol.GetAttributes().First(x => x.AttributeClass!.Name == nameof(ScribeAttribute));
             if (attribute.ConstructorArguments.Length == 1)
@@ -175,7 +176,7 @@ namespace EnumScribe
                 if (IsValidIdentifierSuffix(userSuffix.AsSpan()) == false)
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        descriptor: ScribeEnumDiagnostics.ES0001,
+                        descriptor: EnumScribeDiagnostics.ES0001,
                         location: symbol.Locations[0])); // TODO: Correct location target
 
                     return false;
@@ -195,16 +196,8 @@ namespace EnumScribe
                         includeFields = (bool)arg.Value.Value!;
                         break;
                     case nameof(ScribeAttribute.JsonIgnore):
-                        var system = _context.Compilation.GetTypeByMetadataName(TypeInfo.JsonIgnoreSystemAttribute);
-                        var newtonsoft = _context.Compilation.GetTypeByMetadataName(TypeInfo.JsonIgnoreNewtonsoftAttribute);
-                        if (system is not default(INamedTypeSymbol))
-                        {
-                            jsonIgnoreSystem = true;
-                        }
-                        if (newtonsoft is not default(INamedTypeSymbol))
-                        {
-                            jsonIgnoreNewtonsoft = true;
-                        }
+                        if (IsTypeAvailable(JsonIgnoreNewtonsoftAttribute)) { jsonIgnoreNewtonsoft = true; }
+                        if (IsTypeAvailable(JsonIgnoreSystemAttribute)) { jsonIgnoreSystem = true; }
                         break;
                     case nameof(ScribeAttribute.AccessModifiers):
                         var accessModifiers = (AccessModifier)arg.Value.Value!;
@@ -215,6 +208,9 @@ namespace EnumScribe
 
             return true;
         }
+
+        private bool IsTypeAvailable(string fullyQualifiedMetadataName)
+            => _context.Compilation.GetTypeByMetadataName(fullyQualifiedMetadataName) is not default(INamedTypeSymbol);
 
         private bool ProcessTypeLineage(INamedTypeSymbol symbol, TypeInfo info)
         {
@@ -244,7 +240,7 @@ namespace EnumScribe
             if (parentInfo.IsPartial == false)
             {
                 _context.ReportDiagnostic(Diagnostic.Create(
-                    descriptor: ScribeEnumDiagnostics.ES0003,
+                    descriptor: EnumScribeDiagnostics.ES0003,
                     location: parentSymbol.Locations[0], // TODO: Correct location target
                     parentInfo.Name));
                 return false;
@@ -254,9 +250,7 @@ namespace EnumScribe
         }
 
         private IEnumerable<(ISymbol Symbol, INamedTypeSymbol Type, bool IsNullable)> GetEnumMembers(
-            INamedTypeSymbol typeSymbol,
-            bool includeFields,
-            HashSet<Accessibility> accessibility)
+            INamedTypeSymbol typeSymbol, bool includeFields, HashSet<Accessibility> accessibility)
         {
             // This is a little clunky as the most specific shared interface between IPropertySymbol and IFieldSymbol
             // is ISymbol, which loses access to Type and NullableAnnotation members.
@@ -303,7 +297,6 @@ namespace EnumScribe
             TypeInfo typeInfo)
         {
             var shouldScribe = false;
-            var stringSymbol = _context.Compilation.GetSpecialType(SpecialType.System_String);
 
             foreach (var memberSymbolData in typeEnumMemberData)
             {
@@ -339,7 +332,8 @@ namespace EnumScribe
                                 && m.ReturnNullableAnnotation is NullableAnnotation.Annotated
                             ))
                         // Method returns a string (nullable context independent)
-                        && m.ReturnType.Equals(stringSymbol, SymbolEqualityComparer.Default)
+                        && m.ReturnType.Equals(_context.Compilation.GetSpecialType(SpecialType.System_String),
+                            SymbolEqualityComparer.Default)
                     );
 
                     if (validSymbol is not default(ISymbol))
@@ -363,7 +357,7 @@ namespace EnumScribe
                     else
                     {
                         _context.ReportDiagnostic(Diagnostic.Create(
-                            descriptor: ScribeEnumDiagnostics.ES0005,
+                            descriptor: EnumScribeDiagnostics.ES0005,
                             location: memberSymbolData.Symbol.Locations[0],
                             memberSymbolData.Symbol.Name));
 
@@ -412,26 +406,24 @@ namespace EnumScribe
         {
             if (symbol.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T)
             {
+                // Unwrap Nullable<Enum> to Enum
                 symbol = (INamedTypeSymbol)symbol.TypeArguments[0];
             }
 
-            var enumInfo = new EnumInfo
-            {
-                FullName = symbol.ToDisplayString(),
-                Name = symbol.Name,
-            };
+            var enumInfo = new EnumInfo { FullName = symbol.ToDisplayString() };
 
             var enumSymbols = symbol.GetMembers().OfType<IFieldSymbol>();
             enumInfo.EnumNameDescriptionPairs = new(enumSymbols.Count());
 
             foreach (var enumSymbol in enumSymbols)
             {
+                // Record each enum member
                 var descriptionAttribute = enumSymbol.GetAttributes()
                     .FirstOrDefault(x => x.AttributeClass!.Name == nameof(DescriptionAttribute));
                 if (descriptionAttribute is default(AttributeData))
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        descriptor: ScribeEnumDiagnostics.ES0006,
+                        descriptor: EnumScribeDiagnostics.ES0006,
                         location: enumSymbol.Locations[0]));
 
                     // Missing DescriptionAttribute, use the member name
@@ -440,7 +432,7 @@ namespace EnumScribe
                 else if (descriptionAttribute.ConstructorArguments.Length == 0)
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        descriptor: ScribeEnumDiagnostics.ES0007,
+                        descriptor: EnumScribeDiagnostics.ES0007,
                         location: enumSymbol.Locations[0]));
 
                     // DescriptionAttribute present but no description set, use empty string
@@ -457,7 +449,7 @@ namespace EnumScribe
                     else
                     {
                         _context.ReportDiagnostic(Diagnostic.Create(
-                            descriptor: ScribeEnumDiagnostics.ES0008,
+                            descriptor: EnumScribeDiagnostics.ES0008,
                             location: enumSymbol.Locations[0]));
 
                         // DescriptionAttribute present but description is null, use empty string
@@ -644,21 +636,14 @@ using EnumScribe.Generated.Enums;
                             {
                                 if (type.JsonIgnoreNewtonsoft)
                                 {
-                                    sb
-                                        .Append(methodIndent)
-                                        .Append('[')
-                                        .Append(TypeInfo.JsonIgnoreNewtonsoftAttribute)
-                                        .AppendLine("]");
+                                    WriteAttribute(sb, JsonIgnoreNewtonsoftAttribute, methodIndent);
                                 }
                                 if (type.JsonIgnoreSystem)
                                 {
-                                    sb
-                                        .Append(methodIndent)
-                                        .Append('[')
-                                        .Append(TypeInfo.JsonIgnoreSystemAttribute)
-                                        .AppendLine("]");
+                                    WriteAttribute(sb, JsonIgnoreSystemAttribute, methodIndent);
                                 }
                             }
+
                             WriteMemberText(sb, type, member, methodIndent);
                         }
                     }
@@ -684,10 +669,19 @@ using EnumScribe.Generated.Enums;
 
             static string StaticText(bool isStatic) => isStatic ? "static " : string.Empty;
 
-            static void WriteMemberText(StringBuilder sb, TypeInfo type, MemberInfo member, string methodIndent)
+            static void WriteAttribute(StringBuilder sb, string attribute, string indent)
             {
                 sb
-                    .Append(methodIndent)
+                    .Append(indent)
+                    .Append('[')
+                    .Append(attribute)
+                    .AppendLine("]");
+            }
+
+            static void WriteMemberText(StringBuilder sb, TypeInfo type, MemberInfo member, string indent)
+            {
+                sb
+                    .Append(indent)
                     .Append(member.Accessibility.ToText())
                     .Append(' ')
                     .Append(StaticText(type.IsStatic))

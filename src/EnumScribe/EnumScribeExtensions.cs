@@ -1,14 +1,15 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
+using static EnumScribe.EnumScribeConsts;
 
 namespace EnumScribe
 {
-    internal static class ScribeEnumExtensions
+    internal static class EnumScribeExtensions
     {
         public static HashSet<Accessibility> ToAccessibility(this AccessModifier accessModifier)
         {
-            HashSet<Accessibility> accessibility = new() { Accessibility.Public };
+            HashSet<Accessibility> accessibility = new() { Defaults.Accessibility };
 
             foreach (AccessModifier mod in Enum.GetValues(typeof(AccessModifier)))
             {
@@ -33,9 +34,6 @@ namespace EnumScribe
                             break;
                         case AccessModifier.PrivateProtected:
                             accessibility.Add(Accessibility.ProtectedAndInternal);
-                            break;
-                        default:
-                            // Default case should never happen
                             break;
                     }
                 }
