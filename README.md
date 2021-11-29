@@ -36,7 +36,7 @@
 ### V1.1
 
 * Generic classes where T is an enum
-* Field|Property stray IgnoreScribe
+* Field|Property stray NoScribe (On things that aren't enums, in types that aren't Scribed etc.)
 * Tests
 * Benchmarking
 * New attribute (#NAME) to manually override scribe rules on a property/field basis (suffix, accessibility)

@@ -148,7 +148,7 @@ namespace EnumScribe
                 == false)
             {
                 // `partial` keyword must be delcared on every reference, therefore checking any (the first one in
-                // this case) is acceptable. Error diagnostic is reported at call site as context differ.
+                // this case) is acceptable. Diagnostic error is reported at call site as context differs.
                 classInfo.IsPartial = false;
             }
 
@@ -342,11 +342,12 @@ namespace EnumScribe
                         {
                             // TODO: Report diagnostic: Valid partial method exists, but has been deliberately opted out
 
-                            //_context.ReportDiagnostic(Diagnostic.Create(
-                            //    descriptor: ScribeEnumDiagnostics.ES0005,
-                            //    location: memberSymbolData.Symbol.Locations[0],
-                            //    memberSymbolData.Symbol.Name));
+                            _context.ReportDiagnostic(Diagnostic.Create(
+                                descriptor: EnumScribeDiagnostics.ES0006,
+                                location: memberSymbolData.Symbol.Locations[0],
+                                memberSymbolData.Symbol.Name));
 
+                            // TODO: FINISH THIS
                             continue;
                         }
 
@@ -423,7 +424,7 @@ namespace EnumScribe
                 if (descriptionAttribute is default(AttributeData))
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        descriptor: EnumScribeDiagnostics.ES0006,
+                        descriptor: EnumScribeDiagnostics.ES1001,
                         location: enumSymbol.Locations[0]));
 
                     // Missing DescriptionAttribute, use the member name
@@ -432,7 +433,7 @@ namespace EnumScribe
                 else if (descriptionAttribute.ConstructorArguments.Length == 0)
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        descriptor: EnumScribeDiagnostics.ES0007,
+                        descriptor: EnumScribeDiagnostics.ES1002,
                         location: enumSymbol.Locations[0]));
 
                     // DescriptionAttribute present but no description set, use empty string
@@ -449,7 +450,7 @@ namespace EnumScribe
                     else
                     {
                         _context.ReportDiagnostic(Diagnostic.Create(
-                            descriptor: EnumScribeDiagnostics.ES0008,
+                            descriptor: EnumScribeDiagnostics.ES1003,
                             location: enumSymbol.Locations[0]));
 
                         // DescriptionAttribute present but description is null, use empty string
@@ -636,11 +637,11 @@ using EnumScribe.Generated.Enums;
                             {
                                 if (type.JsonIgnoreNewtonsoft)
                                 {
-                                    WriteAttribute(sb, JsonIgnoreNewtonsoftAttribute, methodIndent);
+                                    WriteAttributeText(sb, JsonIgnoreNewtonsoftAttribute, methodIndent);
                                 }
                                 if (type.JsonIgnoreSystem)
                                 {
-                                    WriteAttribute(sb, JsonIgnoreSystemAttribute, methodIndent);
+                                    WriteAttributeText(sb, JsonIgnoreSystemAttribute, methodIndent);
                                 }
                             }
 
@@ -669,7 +670,7 @@ using EnumScribe.Generated.Enums;
 
             static string StaticText(bool isStatic) => isStatic ? "static " : string.Empty;
 
-            static void WriteAttribute(StringBuilder sb, string attribute, string indent)
+            static void WriteAttributeText(StringBuilder sb, string attribute, string indent)
             {
                 sb
                     .Append(indent)

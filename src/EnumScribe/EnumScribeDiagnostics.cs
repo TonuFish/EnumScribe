@@ -77,65 +77,51 @@ namespace EnumScribe
             helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0005.md"
         );
 
+        /// <summary>
+        /// TODO: Report diagnostic: Valid partial method exists, but has been deliberately opted out
+        /// </summary>
         internal static readonly DiagnosticDescriptor ES0006 = new
         (
             id: "ES0006",
+            title: "Fix 'Scribe' method collision",
+            messageFormat: "Member '{0}' could not be scribed as the TODO",
+            category: "EnumScribe.Something",
+            defaultSeverity: DiagnosticSeverity.Error,
+            isEnabledByDefault: true,
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0006.md"
+        );
+
+        internal static readonly DiagnosticDescriptor ES1001 = new
+        (
+            id: "ES1001",
             title: "Scribed enum entry missing description",
             messageFormat: "Scribed enum entry missing description; therefore is using the default value",
             category: "EnumScribe.Something",
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0006.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES1001.md"
         );
 
-        internal static readonly DiagnosticDescriptor ES0007 = new
+        internal static readonly DiagnosticDescriptor ES1002 = new
         (
-            id: "ES0007",
+            id: "ES1002",
             title: "TODO",
             messageFormat: "Description attribute present, but no description set. Warn and use empty string.",
             category: "EnumScribe.Something",
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0007.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES1002.md"
         );
 
-        internal static readonly DiagnosticDescriptor ES0008 = new
+        internal static readonly DiagnosticDescriptor ES1003 = new
         (
-            id: "ES0008",
+            id: "ES1003",
             title: "TODO",
             messageFormat: "Description attribute present, but description is null. Warn and use empty string.",
             category: "EnumScribe.Something",
             defaultSeverity: DiagnosticSeverity.Info,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0008.md"
-        );
-
-        /// <summary>
-        /// Fix scribe partial method collision.
-        /// </summary>
-        internal static readonly DiagnosticDescriptor ES0009 = new
-        (
-            id: "ES0009",
-            title: "Fix 'Scribe' partial method collision",
-            messageFormat: "Member '{0}' could not be scribed as the nominated partial method is already implemented",
-            category: "EnumScribe.Something",
-            defaultSeverity: DiagnosticSeverity.Error,
-            isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0009.md"
-        );
-
-        /// <summary>
-        /// Fix scribe method naming collision.
-        /// </summary>
-        internal static readonly DiagnosticDescriptor ES0010 = new
-        (
-            id: "ES0010",
-            title: "Fix 'Scribe' method naming collision",
-            messageFormat: "Member '{0}' could not be scribed as the nominated identifier is already in use by a method",
-            category: "EnumScribe.Something",
-            defaultSeverity: DiagnosticSeverity.Error,
-            isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0010.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES1003.md"
         );
     }
 }
