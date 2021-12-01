@@ -26,6 +26,11 @@ namespace Samples
         SecondEntry = 2,
     }
 
+    public partial record UseNamespaceEnum
+    {
+        public int DummyProperty { get; set; }
+    }
+
     [Scribe(JsonIgnore = true)]
     public partial record UseNamespaceEnum
     {

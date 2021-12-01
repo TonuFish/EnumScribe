@@ -27,7 +27,7 @@ namespace EnumScribe
         /// <summary>
         /// Property | Field | Method
         /// </summary>
-        public List<MemberInfo>? EnumMembers { get; set; }
+        public List<MemberInfo>? EnumTypeMembers { get; set; }
 
         public List<TypeInfo>? NestedTypes { get; set; }
         public TypeInfo? ParentType { get; set; }

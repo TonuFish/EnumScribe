@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using static Microsoft.CodeAnalysis.DiagnosticSeverity;
 
 namespace EnumScribe
 {
@@ -8,120 +9,131 @@ namespace EnumScribe
         // https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md
 
         /// <summary>
-        /// Fix invalid suffix argument.
+        /// Fix invalid suffix argument.<br />
+        /// <b>LOCATION:</b> Scribe attribute declaration<br />
+        /// <b>ARGS:</b> Type identifier
         /// </summary>
         internal static readonly DiagnosticDescriptor ES0001 = new
         (
             id: "ES0001",
-            title: "Fix invalid suffix argument",
+            title: "Fix invalid 'suffix' argument",
             messageFormat: "Argument 'suffix' must only contain valid identifier characters",
-            category: "EnumScribe.Naming",
-            defaultSeverity: DiagnosticSeverity.Error,
+            category: "EnumScribe.ErrorFix",
+            defaultSeverity: Error,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0001.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0001.md"
         );
 
         /// <summary>
-        /// Add missing partial modifier on scribed type.
+        /// Add missing partial modifier on scribed type.<br />
+        /// <b>LOCATION:</b> Type declaration<br />
+        /// <b>ARGS:</b> Type identifier
         /// </summary>
         internal static readonly DiagnosticDescriptor ES0002 = new
         (
             id: "ES0002",
             title: "Add missing 'partial' modifier on scribed type",
             messageFormat: "Missing 'partial' modifier on declaration of type '{0}'; type cannot be scribed",
-            category: "EnumScribe.Something",
-            defaultSeverity: DiagnosticSeverity.Error,
+            category: "EnumScribe.ErrorFix",
+            defaultSeverity: Error,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0002.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0002.md"
         );
 
         /// <summary>
-        /// Add missing partial modifier on type enclosing scribed type.
+        /// Add missing partial modifier on type enclosing scribed type.<br />
+        /// <b>LOCATION:</b> Type declaration<br />
+        /// <b>ARGS:</b> Type identifier
         /// </summary>
         internal static readonly DiagnosticDescriptor ES0003 = new
         (
             id: "ES0003",
             title: "Add missing 'partial' modifier on type enclosing scribed type",
             messageFormat: "Missing 'partial' modifier on declaration of type '{0}'; nested type[s] cannot be scribed",
-            category: "EnumScribe.Something",
-            defaultSeverity: DiagnosticSeverity.Error,
+            category: "EnumScribe.ErrorFix",
+            defaultSeverity: Error,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0003.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0003.md"
         );
 
         /// <summary>
-        /// Remove redundant scribe attribute.
+        /// Fix scribed member naming collision.<br />
+        /// <b>LOCATION:</b> Type member<br />
+        /// <b>ARGS:</b> Member identifier
         /// </summary>
         internal static readonly DiagnosticDescriptor ES0004 = new
         (
             id: "ES0004",
-            title: "Remove redundant 'Scribe' attribute",
-            messageFormat: "Redundant 'Scribe' attribute on type '{0}'; type does not contain any enum members",
-            category: "EnumScribe.Redundancy",
-            defaultSeverity: DiagnosticSeverity.Warning, // TODO: change to info.... y info no show :(
+            title: "Fix scribed member naming collision",
+            messageFormat: "Member '{0}' could not be scribed as the nominated identifier is already in use",
+            category: "EnumScribe.ErrorFix",
+            defaultSeverity: Error,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0004.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0004.md"
         );
 
         /// <summary>
-        /// Fix scribe naming collision.
+        /// Fix scribed member partial method collision.<br />
+        /// <b>LOCATION:</b> Type member<br />
+        /// <b>ARGS:</b> Member identifier
         /// </summary>
         internal static readonly DiagnosticDescriptor ES0005 = new
         (
             id: "ES0005",
-            title: "Fix 'Scribe' naming collision",
-            messageFormat: "Member '{0}' could not be scribed as the nominated identifier is already in use",
-            category: "EnumScribe.Something",
-            defaultSeverity: DiagnosticSeverity.Error,
+            title: "Fix scribed member partial method collision",
+            messageFormat: "Member '{0}' could not be scribed as 'ImplementPartialMethods' is set to false on this type",
+            category: "EnumScribe.ErrorFix",
+            defaultSeverity: Error,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0005.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0005.md"
         );
 
         /// <summary>
-        /// TODO: Report diagnostic: Valid partial method exists, but has been deliberately opted out
+        /// Add missing Description attribute on scribed enum.<br />
+        /// <b>LOCATION:</b> Enum member<br />
+        /// <b>ARGS:</b> Enum field identifier
         /// </summary>
-        internal static readonly DiagnosticDescriptor ES0006 = new
-        (
-            id: "ES0006",
-            title: "Fix 'Scribe' method collision",
-            messageFormat: "Member '{0}' could not be scribed as the TODO",
-            category: "EnumScribe.Something",
-            defaultSeverity: DiagnosticSeverity.Error,
-            isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES0006.md"
-        );
-
         internal static readonly DiagnosticDescriptor ES1001 = new
         (
             id: "ES1001",
-            title: "Scribed enum entry missing description",
-            messageFormat: "Scribed enum entry missing description; therefore is using the default value",
-            category: "EnumScribe.Something",
-            defaultSeverity: DiagnosticSeverity.Warning,
+            title: "Add missing 'Description' attribute on scribed enum",
+            messageFormat: "Missing 'Description' attribute on declaration of enum member '{0}'; identifier text has been scribed",
+            category: "EnumScribe.Usage",
+            defaultSeverity: Info,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES1001.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES1001.md"
         );
 
+        /// <summary>
+        /// Update Description attribute with a valid description.<br />
+        /// <b>LOCATION:</b> Enum member<br />
+        /// <b>ARGS:</b> Enum field identifier
+        /// </summary>
         internal static readonly DiagnosticDescriptor ES1002 = new
         (
             id: "ES1002",
-            title: "TODO",
-            messageFormat: "Description attribute present, but no description set. Warn and use empty string.",
-            category: "EnumScribe.Something",
-            defaultSeverity: DiagnosticSeverity.Warning,
+            title: "Update 'Description' attribute with a valid description",
+            messageFormat: "'Description' attribute on declaration of enum member '{0}' is missing 'description'; empty string has been scribed",
+            category: "EnumScribe.Usage",
+            defaultSeverity: Info,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES1002.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES1002.md"
         );
 
+        /// <summary>
+        /// Remove redundant scribe attribute.<br />
+        /// <b>LOCATION:</b> Scribe attribute declaration<br />
+        /// <b>ARGS:</b> Type identifier
+        /// </summary>
         internal static readonly DiagnosticDescriptor ES1003 = new
         (
             id: "ES1003",
-            title: "TODO",
-            messageFormat: "Description attribute present, but description is null. Warn and use empty string.",
-            category: "EnumScribe.Something",
-            defaultSeverity: DiagnosticSeverity.Info,
+            title: "Remove redundant 'Scribe' attribute",
+            messageFormat: "Redundant 'Scribe' attribute on type '{0}'; type does not contain any enum members",
+            category: "EnumScribe.Redundancy",
+            defaultSeverity: Info,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/docs/analyzers/ES1003.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES1003.md"
         );
     }
 }

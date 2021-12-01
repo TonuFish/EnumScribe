@@ -88,7 +88,7 @@ namespace EnumScribe
                     continue;
                 }
 
-                if (GetScribeArguments(typeSymbol,
+                if (GetScribeArguments(typeSymbol, out var attributeLocation,
                     out var suffix, out var includeFields, out var implementPartialMethods,
                     out var jsonIgnoreNewtonsoft, out var jsonIgnoreSystem, out var accessibility)
                         == false)
@@ -113,8 +113,8 @@ namespace EnumScribe
                 if (typeEnumMemberSymbols.Any() == false)
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        descriptor: EnumScribeDiagnostics.ES0004,
-                        location: typeSymbol.Locations[0], // TODO: Correct location target
+                        descriptor: EnumScribeDiagnostics.ES1003,
+                        location: attributeLocation,
                         typeInfo.Name));
 
                     // No enums in type that meet Scribe conditions, skip
@@ -156,6 +156,7 @@ namespace EnumScribe
         }
 
         private bool GetScribeArguments(INamedTypeSymbol symbol,
+            out Location attributeLocation,
             out string suffix,
             out bool includeFields, out bool implementPartialMethods,
             out bool jsonIgnoreNewtonsoft, out bool jsonIgnoreSystem,
@@ -168,21 +169,23 @@ namespace EnumScribe
             jsonIgnoreSystem = Defaults.JsonIgnoreSystem;
             accessibility = Defaults.MutableAccessibility();
 
-            var attribute = symbol.GetAttributes().First(x => x.AttributeClass!.Name == nameof(ScribeAttribute));
+            var attribute = symbol.GetAttributes().First(x => x.AttributeClass?.Name == nameof(ScribeAttribute));
+            attributeLocation = attribute.ApplicationSyntaxReference!.GetSyntax().GetLocation();
+
             if (attribute.ConstructorArguments.Length == 1)
             {
-                var userSuffix = (string)attribute.ConstructorArguments[0].Value!;
+                var userSuffix = (string?)attribute.ConstructorArguments[0].Value;
 
-                if (IsValidIdentifierSuffix(userSuffix.AsSpan()) == false)
+                if (userSuffix is null || (IsValidIdentifierSuffix(userSuffix!.AsSpan()) == false))
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
                         descriptor: EnumScribeDiagnostics.ES0001,
-                        location: symbol.Locations[0])); // TODO: Correct location target
+                        location: attributeLocation));
 
                     return false;
                 }
 
-                suffix = userSuffix;
+                suffix = userSuffix!;
             }
 
             foreach (var arg in attribute.NamedArguments)
@@ -340,14 +343,12 @@ namespace EnumScribe
                     {
                         if (typeInfo.ImplementPartialMethods == false)
                         {
-                            // TODO: Report diagnostic: Valid partial method exists, but has been deliberately opted out
-
                             _context.ReportDiagnostic(Diagnostic.Create(
-                                descriptor: EnumScribeDiagnostics.ES0006,
+                                descriptor: EnumScribeDiagnostics.ES0005,
                                 location: memberSymbolData.Symbol.Locations[0],
                                 memberSymbolData.Symbol.Name));
 
-                            // TODO: FINISH THIS
+                            // Valid partial method exists, but partial method implementation has been disabled, skip
                             continue;
                         }
 
@@ -358,12 +359,11 @@ namespace EnumScribe
                     else
                     {
                         _context.ReportDiagnostic(Diagnostic.Create(
-                            descriptor: EnumScribeDiagnostics.ES0005,
+                            descriptor: EnumScribeDiagnostics.ES0004,
                             location: memberSymbolData.Symbol.Locations[0],
                             memberSymbolData.Symbol.Name));
 
-                        // Member name already in use by at least one other symbol, skip
-                        // Really, this is "can't find the correct sort of method overload OR can't in general"
+                        // Member name is already in use by at least one other symbol, skip
                         continue;
                     }
                 }
@@ -380,8 +380,8 @@ namespace EnumScribe
                     _enumInfos.Add(enumInfo);
                 }
 
-                typeInfo.EnumMembers ??= new();
-                typeInfo.EnumMembers.Add(new()
+                typeInfo.EnumTypeMembers ??= new();
+                typeInfo.EnumTypeMembers.Add(new()
                 {
                     Accessibility = accessibility,
                     EnumInfo = enumInfo!,
@@ -400,6 +400,7 @@ namespace EnumScribe
                 shouldScribe = true;
             }
 
+            // If any member is able to be scribed, true
             return shouldScribe;
         }
 
@@ -425,7 +426,8 @@ namespace EnumScribe
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
                         descriptor: EnumScribeDiagnostics.ES1001,
-                        location: enumSymbol.Locations[0]));
+                        location: enumSymbol.Locations[0],
+                        enumSymbol.Name));
 
                     // Missing DescriptionAttribute, use the member name
                     enumInfo.EnumNameDescriptionPairs.Add((enumSymbol.Name, enumSymbol.Name));
@@ -434,7 +436,8 @@ namespace EnumScribe
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
                         descriptor: EnumScribeDiagnostics.ES1002,
-                        location: enumSymbol.Locations[0]));
+                        location: enumSymbol.Locations[0],
+                        enumSymbol.Name));
 
                     // DescriptionAttribute present but no description set, use empty string
                     enumInfo.EnumNameDescriptionPairs.Add((enumSymbol.Name, string.Empty));
@@ -450,8 +453,9 @@ namespace EnumScribe
                     else
                     {
                         _context.ReportDiagnostic(Diagnostic.Create(
-                            descriptor: EnumScribeDiagnostics.ES1003,
-                            location: enumSymbol.Locations[0]));
+                            descriptor: EnumScribeDiagnostics.ES1002,
+                            location: enumSymbol.Locations[0],
+                            enumSymbol.Name));
 
                         // DescriptionAttribute present but description is null, use empty string
                         enumInfo.EnumNameDescriptionPairs.Add((enumSymbol.Name, string.Empty));
@@ -629,9 +633,9 @@ using EnumScribe.Generated.Enums;
                 {
                     var methodIndent = GetIndentation(baseIndentation + 1);
 
-                    if (type.EnumMembers is not null)
+                    if (type.EnumTypeMembers is not null)
                     {
-                        foreach (var member in type.EnumMembers)
+                        foreach (var member in type.EnumTypeMembers)
                         {
                             if (member.IsPartialMethod == false)
                             {
