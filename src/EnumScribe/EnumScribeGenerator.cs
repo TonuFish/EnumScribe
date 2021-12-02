@@ -65,7 +65,7 @@ namespace EnumScribe
             foreach (var typeSymbol in scribedTypeSymbols)
             {
                 var typeInfo = _typeInfos.Find(x => x.FullName == typeSymbol.ToDisplayString());
-                if (typeInfo is default(TypeInfo))
+                if (typeInfo is null)
                 {
                     // Record unseen type
                     typeInfo = GetTypeInfo(typeSymbol);
@@ -213,7 +213,7 @@ namespace EnumScribe
         }
 
         private bool IsTypeAvailable(string fullyQualifiedMetadataName)
-            => _context.Compilation.GetTypeByMetadataName(fullyQualifiedMetadataName) is not default(INamedTypeSymbol);
+            => _context.Compilation.GetTypeByMetadataName(fullyQualifiedMetadataName) is not null;
 
         private bool ProcessTypeLineage(INamedTypeSymbol symbol, TypeInfo info)
         {
@@ -225,7 +225,7 @@ namespace EnumScribe
             var parentSymbol = (INamedTypeSymbol)symbol.ContainingSymbol!;
             var parentFullName = parentSymbol.ToDisplayString();
             var parentInfo = _typeInfos.Find(x => x.FullName == parentFullName);
-            if (parentInfo is not default(TypeInfo))
+            if (parentInfo is not null)
             {
                 // Parent type already recorded
                 parentInfo.NestedTypes ??= new();
@@ -244,7 +244,7 @@ namespace EnumScribe
             {
                 _context.ReportDiagnostic(Diagnostic.Create(
                     descriptor: EnumScribeDiagnostics.ES0003,
-                    location: parentSymbol.Locations[0], // TODO: Correct location target
+                    location: parentSymbol.Locations[0],
                     parentInfo.Name));
                 return false;
             }
@@ -339,7 +339,7 @@ namespace EnumScribe
                             SymbolEqualityComparer.Default)
                     );
 
-                    if (validSymbol is not default(ISymbol))
+                    if (validSymbol is not null)
                     {
                         if (typeInfo.ImplementPartialMethods == false)
                         {
@@ -373,7 +373,7 @@ namespace EnumScribe
                     : memberSymbolData.Type.ToDisplayString();
 
                 var enumInfo = _enumInfos.Find(x => x.FullName == enumFullName);
-                if (enumInfo is default(EnumInfo))
+                if (enumInfo is null)
                 {
                     // Record unseen enum
                     enumInfo = GetEnumInfo(memberSymbolData.Type);
@@ -422,7 +422,7 @@ namespace EnumScribe
                 // Record each enum member
                 var descriptionAttribute = enumSymbol.GetAttributes()
                     .FirstOrDefault(x => x.AttributeClass!.Name == nameof(DescriptionAttribute));
-                if (descriptionAttribute is default(AttributeData))
+                if (descriptionAttribute is null)
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
                         descriptor: EnumScribeDiagnostics.ES1001,
@@ -494,8 +494,8 @@ namespace EnumScribe
             {
                 switch (char.GetUnicodeCategory(suffix[ii]))
                 {
-                    // Cases cover all valid characters in a method name
-                    // ref. ECMA-334 5th ed. pg. 19; "7.4.3 Identifiers"
+                    // Categories cover all legal non-leading characters in a type member identifier
+                    // ref. ECMA-334:2017 5th ed. pg. 19; "7.4.3 Identifiers"
                     case UnicodeCategory.ConnectorPunctuation:
                     case UnicodeCategory.DecimalDigitNumber:
                     case UnicodeCategory.Format:
@@ -587,7 +587,7 @@ using EnumScribe.Generated.Enums;
 
             // Reduce to base types (not nested), group by namespace
             var typesByNamespace = _typeInfos
-                .Where(x => x.ParentType is default(TypeInfo) && x.HasFullPartialLineage)
+                .Where(x => x.ParentType is null && x.HasFullPartialLineage)
                 .GroupBy(x => x.Namespace);
 
             foreach (var namespaceGroup in typesByNamespace)

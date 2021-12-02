@@ -12,6 +12,8 @@ namespace EnumScribe.Tests
         //{
         //}
 
+        // https://github.com/dotnet/roslyn-sdk/blob/main/src/Microsoft.CodeAnalysis.Testing/README.md
+
         // ScribeEnum default works
         // - Targeting right namespaces
         // - Targeting right classes
