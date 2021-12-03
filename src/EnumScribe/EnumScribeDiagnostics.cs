@@ -5,9 +5,6 @@ namespace EnumScribe
 {
     internal static class EnumScribeDiagnostics
     {
-        // TODO: Release tracking analyzer, thanks roslynator!
-        // https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md
-
         /// <summary>
         /// Fix invalid suffix argument.<br />
         /// <b>LOCATION:</b> Scribe attribute declaration<br />
@@ -18,10 +15,11 @@ namespace EnumScribe
             id: "ES0001",
             title: "Fix invalid 'suffix' argument",
             messageFormat: "Argument 'suffix' must only contain valid identifier characters",
-            category: "EnumScribe.ErrorFix",
+            category: "EnumScribe.Naming",
             defaultSeverity: Error,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0001.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0001.md",
+            customTags: WellKnownDiagnosticTags.NotConfigurable
         );
 
         /// <summary>
@@ -34,10 +32,11 @@ namespace EnumScribe
             id: "ES0002",
             title: "Add missing 'partial' modifier on scribed type",
             messageFormat: "Missing 'partial' modifier on declaration of type '{0}'; type cannot be scribed",
-            category: "EnumScribe.ErrorFix",
+            category: "EnumScribe.Usage",
             defaultSeverity: Error,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0002.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0002.md",
+            customTags: WellKnownDiagnosticTags.NotConfigurable
         );
 
         /// <summary>
@@ -50,10 +49,11 @@ namespace EnumScribe
             id: "ES0003",
             title: "Add missing 'partial' modifier on type enclosing scribed type",
             messageFormat: "Missing 'partial' modifier on declaration of type '{0}'; nested type[s] cannot be scribed",
-            category: "EnumScribe.ErrorFix",
+            category: "EnumScribe.Usage",
             defaultSeverity: Error,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0003.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0003.md",
+            customTags: WellKnownDiagnosticTags.NotConfigurable
         );
 
         /// <summary>
@@ -66,10 +66,11 @@ namespace EnumScribe
             id: "ES0004",
             title: "Fix scribed member naming collision",
             messageFormat: "Member '{0}' could not be scribed as the nominated identifier is already in use",
-            category: "EnumScribe.ErrorFix",
+            category: "EnumScribe.Naming",
             defaultSeverity: Error,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0004.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0004.md",
+            customTags: WellKnownDiagnosticTags.NotConfigurable
         );
 
         /// <summary>
@@ -82,10 +83,11 @@ namespace EnumScribe
             id: "ES0005",
             title: "Fix scribed member partial method collision",
             messageFormat: "Member '{0}' could not be scribed as 'ImplementPartialMethods' is set to false on this type",
-            category: "EnumScribe.ErrorFix",
+            category: "EnumScribe.Usage",
             defaultSeverity: Error,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0005.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0005.md",
+            customTags: WellKnownDiagnosticTags.NotConfigurable
         );
 
         /// <summary>
@@ -133,7 +135,8 @@ namespace EnumScribe
             category: "EnumScribe.Redundancy",
             defaultSeverity: Info,
             isEnabledByDefault: true,
-            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES1003.md"
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES1003.md",
+            customTags: WellKnownDiagnosticTags.Unnecessary
         );
     }
 }

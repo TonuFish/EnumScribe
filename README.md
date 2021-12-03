@@ -21,6 +21,7 @@
 * Make sure JsonIgnore functions correctly for all permutations of framework + library
 * Remember nuspec System.Collections.Immutable mess when setting up packaging
 * SourceLink
+* Roadmap: Acknowledge get accessor accessibility on property when scribing
 
 ### V1.0
 
