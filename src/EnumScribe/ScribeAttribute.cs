@@ -54,6 +54,9 @@ namespace EnumScribe
         /// </summary>
         public string Suffix { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScribeAttribute"/> class.
+        /// </summary>
         public ScribeAttribute() : this(DefaultSuffix) { }
 
         /// <summary>
