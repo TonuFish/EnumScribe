@@ -11,4 +11,4 @@ ES0004 | EnumScribe.Naming | Error | EnumScribeDiagnostics, [Documentation](http
 ES0005 | EnumScribe.Usage | Error | EnumScribeDiagnostics, [Documentation](https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES0005.md)
 ES1001 | EnumScribe.Usage | Info | EnumScribeDiagnostics, [Documentation](https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES1001.md)
 ES1002 | EnumScribe.Usage | Info | EnumScribeDiagnostics, [Documentation](https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES1002.md)
-ES1003 | EnumScribe.Redundancy | Info | EnumScribeDiagnostics, [Documentation](https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES1003.md)
+ES1003 | EnumScribe.Redundancy | Warning | EnumScribeDiagnostics, [Documentation](https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES1003.md)

@@ -76,13 +76,13 @@ namespace EnumScribe
         /// <summary>
         /// Fix scribed member partial method collision.<br />
         /// <b>LOCATION:</b> Type member<br />
-        /// <b>ARGS:</b> Member identifier
+        /// <b>ARGS:</b> Member identifier, Type identifier
         /// </summary>
         internal static readonly DiagnosticDescriptor ES0005 = new
         (
             id: "ES0005",
             title: "Fix scribed member partial method collision",
-            messageFormat: "Member '{0}' could not be scribed as 'ImplementPartialMethods' is set to false on this type",
+            messageFormat: "Member '{0}' could not be scribed as 'ImplementPartialMethods' is false on type '{1}'",
             category: "EnumScribe.Usage",
             defaultSeverity: Error,
             isEnabledByDefault: true,
@@ -131,9 +131,9 @@ namespace EnumScribe
         (
             id: "ES1003",
             title: "Remove redundant 'Scribe' attribute",
-            messageFormat: "Redundant 'Scribe' attribute on type '{0}'; type does not contain any enum members",
+            messageFormat: "Redundant 'Scribe' attribute on type '{0}'; type does not contain any accessible enum members",
             category: "EnumScribe.Redundancy",
-            defaultSeverity: Info,
+            defaultSeverity: Warning,
             isEnabledByDefault: true,
             helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES1003.md",
             customTags: WellKnownDiagnosticTags.Unnecessary
