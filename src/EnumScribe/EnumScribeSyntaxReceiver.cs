@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace EnumScribe
 {
-    internal class EnumScribeSyntaxReceiver : ISyntaxContextReceiver
+    internal sealed class EnumScribeSyntaxReceiver : ISyntaxContextReceiver
     {
         public List<INamedTypeSymbol> ScribeAttributeSymbols { get; } = new();
 

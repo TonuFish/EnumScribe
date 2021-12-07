@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace EnumScribe
 {
-    internal class TypeInfo
+    internal sealed class TypeInfo
     {
         public Accessibility Accessibility { get; set; }
         public string FullName => $"{Namespace}.{Name}{GenericSignature}";

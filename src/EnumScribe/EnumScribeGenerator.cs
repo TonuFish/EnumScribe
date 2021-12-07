@@ -38,8 +38,8 @@ namespace EnumScribe
             //! EXTERNAL PROJECT DEBUGGING
             //if (System.Diagnostics.Debugger.IsAttached == false)
             //{
-                //System.Diagnostics.Debugger.Launch();
-                //System.Diagnostics.Debugger.Break();
+            //System.Diagnostics.Debugger.Launch();
+            //System.Diagnostics.Debugger.Break();
             //}
 #endif
 
@@ -131,7 +131,7 @@ namespace EnumScribe
             }
         }
 
-        private TypeInfo GetTypeInfo(INamedTypeSymbol symbol)
+        private static TypeInfo GetTypeInfo(INamedTypeSymbol symbol)
         {
             var classInfo = new TypeInfo
             {
@@ -346,7 +346,7 @@ namespace EnumScribe
                             _context.ReportDiagnostic(Diagnostic.Create(
                                 descriptor: EnumScribeDiagnostics.ES0005,
                                 location: memberSymbolData.Symbol.Locations[0],
-                                memberSymbolData.Symbol.Name));
+                                memberSymbolData.Symbol.Name, typeInfo.Name));
 
                             // Valid partial method exists, but partial method implementation has been disabled, skip
                             continue;
@@ -595,7 +595,7 @@ using EnumScribe.Generated.Enums;
                 sb
                     .Append("namespace ")
                     .AppendLine(namespaceGroup.Key)
-                    .Append("{");
+                    .Append('{');
 
                 foreach (var rootType in namespaceGroup)
                 {
