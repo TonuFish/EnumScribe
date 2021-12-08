@@ -69,6 +69,10 @@ It can be helpful to opt into outputting generated files by including the below 
   </PropertyGroup>
 ```
 
+### Definition cannot be found
+
+Compiler errors [CS1061](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-messages/cs1061) and CS8795 warns of missing or unimplemented type members and may erronously report that generated code is missing. This may presist through project rebuilds, but can usually be resolved by restarting your IDE.
+
 ## Planned work
 
 - Proper tests and benchmarks

@@ -1,74 +1,69 @@
 ﻿using System;
 using System.ComponentModel;
-using EnumScribe;
 
-namespace Samples
+namespace EnumScribe.Samples
 {
-    static class Program
+    // Uses the default suffix of "Description"
+    // Targets public, internal and private properties
+    [Scribe(AccessModifiers = AccessModifier.Internal | AccessModifier.Private)]
+    public partial class Inventory
     {
-        static void Main(string[] args)
+        public StockLevel? CakeStock { get; set; }
+        // public string? CakeStockDescription { get; }
+
+        internal StockLevel FishStock { get; set; }
+        // internal StockLevel FishStockDescription { get; }
+
+        [NoScribe]
+        public StockLevel PieStock { get; set; }
+        // Excluded by NoScribe attribute
+
+        private StockLevel _alpacaStock;
+        // Excluded as fields are not scribed by default
+    }
+
+    // Uses the suffix "Text"
+    // Targets public properties and fields
+    // Adds the System.Text.Json and/or Json.NET [JsonIgnore] attributes, if the respective library is in scope
+    [Scribe("Text", IncludeFields = true, JsonIgnore = true)]
+    public partial record InventoryHistory
+    {
+        internal StockLevel DuckStock { get; set; }
+        // Excluded as internal accessibility isn't explicitly targeted
+
+        public StockLevel dragonStock;
+        // public string dragonStockText { get; } and [JsonIgnore] attributes
+
+        public StockLevel? OwlStock { get; set; }
+        public partial string? OwlStockText();
+        // public string? OwlStockText() { /* implemented */ }
+    }
+
+    public enum StockLevel
+    {
+        [Description("In stock")]
+        Available = 0,
+        [Description("Low stock")]
+        Low,
+        [Description("Out of stock")]
+        OutOfStock,
+        [Description("Unavailable")]
+        Retired,
+    }
+
+    public static class Program
+    {
+        public static void Main()
         {
-            Console.WriteLine("Hello World!");
-            UseNamespaceEnumGeneric<int> q = new();
-            q.SeeProperty = NamespaceLevelEnum.ZeroethEntry | NamespaceLevelEnum.FirstEntry;
-            Console.WriteLine($"Value: {q.SeePropertyDescription()}");
-        }
-    }
+            // Build the project to view the generated files!
+            // EnumScribe.Samples\obj\GeneratedFiles\EnumScribe\EnumScribe.EnumScribeGenerator
 
-    [Flags]
-    public enum NamespaceLevelEnum
-    {
-        [Description("0th Entry")]
-        ZeroethEntry = 0,
-        [Description("1st Entry")]
-        FirstEntry = 1,
-        [Description("2nd Entry")]
-        SecondEntry = 2,
-    }
-
-    public partial record UseNamespaceEnum
-    {
-        public int DummyProperty { get; set; }
-    }
-
-    [Scribe(JsonIgnore = true)]
-    public partial record UseNamespaceEnum
-    {
-        public NamespaceLevelEnum SeeProperty { get; set; }
-        public NamespaceLevelEnum? SeePropertyNullable { get; set; }
-    }
-
-    [Scribe]
-    public partial class UseNamespaceEnumGeneric<T>
-    {
-        public NamespaceLevelEnum? SeeProperty { get; set; }
-
-        //public partial string SeePropertyDescription();
-
-        public partial string? SeePropertyDescription();
-
-        //public partial string? SeePropertyDescription(int num);
-
-        //public partial NamespaceLevelEnum SeePropertyDescription();
-
-        //public partial NamespaceLevelEnum SeePropertyDescription(int num);
-
-        //public partial NamespaceLevelEnum SeePropertyDescription(int num, int num2);
-
-        //public partial NamespaceLevelEnum SeePropertyDescription<GenericType>();
-
-        //public partial NamespaceLevelEnum SeePropertyDescription<GenericType, GenericTypeTwo>();
-
-        [Scribe]
-        public partial class UseNamespaceEnumGenericNested<U, V>
-        {
-            public NamespaceLevelEnum? SeeProperty { get; set; }
-
-            public partial string? SeePropertyDescription();
-
-            //public partial NamespaceLevelEnum SeePropertyDescription<GenericType>();
-
-            //public partial NamespaceLevelEnum SeePropertyDescription<GenericType, GenericTypeTwo>();
+            Inventory inv = new() { CakeStock = StockLevel.Low, FishStock = StockLevel.OutOfStock };
+            InventoryHistory invHist = new() { OwlStock = StockLevel.Retired };
+            Console.WriteLine(inv.CakeStockDescription);    // Low stock
+            Console.WriteLine(inv.FishStockDescription);    // Out of stock
+            Console.WriteLine(invHist.dragonStockText);     // Available
+            Console.WriteLine(invHist.OwlStockText());        // Unavailable
         }
     }
 }

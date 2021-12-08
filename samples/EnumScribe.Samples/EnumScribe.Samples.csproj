@@ -4,8 +4,8 @@
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net6.0</TargetFramework>
 		<!--<TargetFramework>netcoreapp2.0</TargetFramework>-->
+		<!--<TargetFramework>netcoreapp3.1</TargetFramework>-->
 		<!--<TargetFramework>net461</TargetFramework>-->
-		<!--<TargetFramework>netstandard2.0</TargetFramework>-->
 		<!--NETCOREAPP2_0-3_1	System.Collections.Immutable, Version=1.2.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a-->
 		<!--OTHERWISE			System.Collections.Immutable, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a-->
 		<LangVersion>latest</LangVersion>
@@ -14,7 +14,7 @@
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
 		<CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>
 		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
