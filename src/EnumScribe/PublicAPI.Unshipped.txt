@@ -1,0 +1,27 @@
+﻿#nullable enable
+EnumScribe.AccessModifier
+EnumScribe.AccessModifier.All = EnumScribe.AccessModifier.Private | EnumScribe.AccessModifier.Protected | EnumScribe.AccessModifier.Internal | EnumScribe.AccessModifier.ProtectedInternal | EnumScribe.AccessModifier.PrivateProtected -> EnumScribe.AccessModifier
+EnumScribe.AccessModifier.Internal = 4 -> EnumScribe.AccessModifier
+EnumScribe.AccessModifier.Private = 1 -> EnumScribe.AccessModifier
+EnumScribe.AccessModifier.PrivateProtected = 16 -> EnumScribe.AccessModifier
+EnumScribe.AccessModifier.Protected = 2 -> EnumScribe.AccessModifier
+EnumScribe.AccessModifier.ProtectedInternal = 8 -> EnumScribe.AccessModifier
+EnumScribe.AccessModifier.Public = 0 -> EnumScribe.AccessModifier
+EnumScribe.NoScribeAttribute
+EnumScribe.NoScribeAttribute.NoScribeAttribute() -> void
+EnumScribe.ScribeAttribute
+EnumScribe.ScribeAttribute.AccessModifiers.get -> EnumScribe.AccessModifier
+EnumScribe.ScribeAttribute.AccessModifiers.set -> void
+EnumScribe.ScribeAttribute.ImplementPartialMethods.get -> bool
+EnumScribe.ScribeAttribute.ImplementPartialMethods.set -> void
+EnumScribe.ScribeAttribute.IncludeFields.get -> bool
+EnumScribe.ScribeAttribute.IncludeFields.set -> void
+EnumScribe.ScribeAttribute.JsonIgnore.get -> bool
+EnumScribe.ScribeAttribute.JsonIgnore.set -> void
+EnumScribe.ScribeAttribute.ScribeAttribute() -> void
+EnumScribe.ScribeAttribute.ScribeAttribute(string! suffix) -> void
+EnumScribe.ScribeAttribute.Suffix.get -> string!
+override EnumScribe.ScribeAttribute.Equals(object? obj) -> bool
+override EnumScribe.ScribeAttribute.GetHashCode() -> int
+override EnumScribe.ScribeAttribute.IsDefaultAttribute() -> bool
+static readonly EnumScribe.ScribeAttribute.Default -> EnumScribe.ScribeAttribute!

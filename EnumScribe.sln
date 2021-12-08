@@ -1,13 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31321.278
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31815.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnumScribe", "src\EnumScribe\EnumScribe.csproj", "{DBAAE4BC-A236-4E9A-954B-C98815527E0A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnumScribe.Samples", "samples\EnumScribe.Samples\EnumScribe.Samples.csproj", "{DAAA2A0C-B851-478C-8D45-9E8BFAF364EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnumScribe.Samples", "samples\EnumScribe.Samples\EnumScribe.Samples.csproj", "{DAAA2A0C-B851-478C-8D45-9E8BFAF364EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnumScribe.Tests", "tests\EnumScribe.Tests\EnumScribe.Tests.csproj", "{B0712501-0BB4-47BE-AC3C-0D37D21D04A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnumScribe.Tests", "tests\EnumScribe.Tests\EnumScribe.Tests.csproj", "{B0712501-0BB4-47BE-AC3C-0D37D21D04A2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D998CE41-FD7C-456D-AFB1-29FA7953C242}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
