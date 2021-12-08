@@ -29,4 +29,4 @@ jobs:
           mkdir __out
           dotnet pack -c Release -o __out --no-restore
           dotnet nuget push "./__out/*.nupkg" --skip-duplicate --no-symbols true --api-key ${{secrets.NUGET_TOKEN}}
-          rm __out -Recursive -Force
+          rm __out -Recurse -Force
