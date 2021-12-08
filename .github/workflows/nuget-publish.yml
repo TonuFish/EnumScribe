@@ -25,8 +25,9 @@ jobs:
         run: dotnet build -c Release --no-restore
         
       - name: Publish
+        # TODO: Fix dodgy hardcoding (along with the rest of this publish pipeline)
         run: |
           mkdir __out
           dotnet pack -c Release -o __out --no-restore
-          dotnet nuget push "./__out/*.nupkg" --source "https://api.nuget.org/v3/index.json" --skip-duplicate --no-symbols true --api-key ${{secrets.NUGET_API_KEY}}
+          dotnet nuget push "./__out/EnumScribe.1.0.0.nupkg" --source "https://api.nuget.org/v3/index.json" --skip-duplicate --no-symbols true --api-key ${{secrets.NUGET_API_KEY}}
           rm __out -Recurse -Force
