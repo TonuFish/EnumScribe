@@ -21,13 +21,13 @@
 		<PackageVersion>1.0.0</PackageVersion>
 		<Authors>Tonu</Authors>
 		<Title>EnumScribe</Title>
-		<Description>Generates string properties to access enum descriptions on marked types. Primarily used to simplify binding description text in UI elements.</Description>
+		<Description>Generates string properties to access enum descriptions on marked types. Primarily used to simplify binding enum description text in UI elements and avoid runtime reflection.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/TonuFish/EnumScribe</PackageProjectUrl>
 		<PackageIcon>icon_256.png</PackageIcon>
 		<PackageIconUrl>https://github.com/TonuFish/EnumScribe/tree/master/img/icon_256.png</PackageIconUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>attribute C# description enum generator source-generator</PackageTags>
+		<PackageTags>description attribute description-attribute enum C# generator source-generator</PackageTags>
 		<PackageReleaseNotes>Initial release.</PackageReleaseNotes>
 		<RepositoryUrl>https://github.com/TonuFish/EnumScribe.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>

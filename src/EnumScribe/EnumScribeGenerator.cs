@@ -15,7 +15,7 @@ namespace EnumScribe
     {
         private const string EnumsHintName = "Enums.EnumScribe.g.cs";
         private const string PartialsHintName = "Partials.EnumScribe.g.cs";
-        private const string PackageVersion = "0.9.0-alpha";
+        private const string PackageVersion = "1.0.0";
         private const int IndentWidth = 4;
 
         private GeneratorExecutionContext _context;
@@ -520,6 +520,9 @@ namespace EnumScribe
 
         #region Generating
 
+        // TODO: Manual text generation should be replaced with Emit style type building dumped to text.
+        // Works for now though.
+
         private string GenerateEnumsSource()
         {
             StringBuilder sb = new(capacity: 688);
@@ -532,7 +535,7 @@ using System.Runtime.CompilerServices;
 
 namespace EnumScribe.Generated.Enums
 {
-    [GeneratedCodeAttribute(""ScribeEnumGenerator"", """).Append(PackageVersion).AppendLine(@""")]
+    [GeneratedCodeAttribute(""EnumScribe"", """).Append(PackageVersion).AppendLine(@""")]
     internal static class EnumDescriptions
     {");
 

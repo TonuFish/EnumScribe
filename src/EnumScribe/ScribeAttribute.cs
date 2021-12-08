@@ -23,22 +23,26 @@ namespace EnumScribe
         public static readonly ScribeAttribute Default = new();
 
         /// <summary>
-        /// A bitwise combination of accessibility modifiers that specify which members may be scribed.
+        /// A bitwise combination of accessibility modifiers that specify which members may be scribed.<br/>
+        /// Defaults to <see cref="AccessModifier.Public"/>.
         /// </summary>
         public AccessModifier AccessModifiers { get; set; } = AccessModifier.Public;
 
         /// <summary>
-        /// Indicates that valid partial methods should be implemented, otherwise resulting in a compilation error.
+        /// Indicates that valid partial methods should be implemented, otherwise resulting in a compilation error.<br/>
+        /// Defaults to <see langword="true"/>.
         /// </summary>
         public bool ImplementPartialMethods { get; set; } = Defaults.ImplementPartialMethods;
 
         /// <summary>
-        /// Indicates that field members should be scribed.
+        /// Indicates that field members should be scribed.<br/>
+        /// Defaults to <see langword="false"/>.
         /// </summary>
         public bool IncludeFields { get; set; } = Defaults.IncludeFields;
 
         /// <summary>
-        /// Indicates that all scribe generated properties will be declared with <c>JsonIgnore</c> attribute[s].
+        /// Indicates that all scribe generated properties will be declared with <c>JsonIgnore</c> attribute[s].<br/>
+        /// Defaults to <see langword="false"/>.
         /// </summary>
         /// <remarks>
         /// Supported JSON libraries:
@@ -47,10 +51,11 @@ namespace EnumScribe
         ///     <item><description>Json.NET (Newtonsoft)</description></item>
         /// </list>
         /// </remarks>
-        public bool JsonIgnore { get; set; } = false;
+        public bool JsonIgnore { get; set; } = Defaults.JsonIgnoreNewtonsoft || Defaults.JsonIgnoreSystem;
 
         /// <summary>
-        /// Gets the suffix text used by this instance of the <see cref="ScribeAttribute"/> class.
+        /// Gets the suffix text used by this instance of the <see cref="ScribeAttribute"/> class.<br/>
+        /// Defaults to <c>Description</c>.
         /// </summary>
         public string Suffix { get; }
 
