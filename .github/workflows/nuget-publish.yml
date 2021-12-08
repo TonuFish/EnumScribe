@@ -1,0 +1,29 @@
+name: "NuGet Publish"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  nuget-publish:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup .NET 6.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+        env:
+          NUGET_AUTH_TOKEN: ${{secrets.NUGET_API_KEY}}
+
+      - name: Restore
+        run: dotnet restore
+        
+      - name: Publish
+        run: |
+          mkdir __out
+          dotnet pack -c Release -o __out --no-restore
+          dotnet nuget push "./__out/*.nupkg" --skip-duplicate --no-symbols true --api-key ${{secrets.NUGET_TOKEN}}
+          rm -rf __out          
