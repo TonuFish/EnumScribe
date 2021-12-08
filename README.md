@@ -3,7 +3,9 @@
 </h1>
 
 <h1 align="center">
-    Badges
+
+[![Nuget](https://img.shields.io/nuget/v/EnumScribe?color=%236b2671&logo=Nuget&logoColor=%23ba2f8c&style=for-the-badge)](https://www.nuget.org/packages/EnumScribe)
+[![Nuget](https://img.shields.io/nuget/dt/EnumScribe?color=%236b2671&logo=Nuget&logoColor=%23ba2f8c&style=for-the-badge)](https://www.nuget.org/packages/EnumScribe)
 </h1>
 
 # EnumScribe
