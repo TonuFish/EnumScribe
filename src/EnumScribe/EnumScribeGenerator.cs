@@ -15,7 +15,7 @@ namespace EnumScribe
     {
         private const string EnumsHintName = "Enums.EnumScribe.g.cs";
         private const string PartialsHintName = "Partials.EnumScribe.g.cs";
-        private const string PackageVersion = "1.0.0";
+        private const string PackageVersion = "1.0.1";
         private const int IndentWidth = 4;
 
         private GeneratorExecutionContext _context;

@@ -3,6 +3,8 @@ name: "NuGet Publish"
 on:
   workflow_dispatch:
 
+# TODO: Split up workflows properly - v hackjob-y
+
 jobs:
   nuget-publish:
     runs-on: windows-latest
@@ -29,5 +31,5 @@ jobs:
         run: |
           mkdir __out
           dotnet pack -c Release -o __out --no-restore
-          dotnet nuget push "./__out/EnumScribe.1.0.0.nupkg" --source "https://api.nuget.org/v3/index.json" --skip-duplicate --no-symbols true --api-key ${{secrets.NUGET_API_KEY}}
+          dotnet nuget push "./__out/EnumScribe.1.0.1.nupkg" --source "https://api.nuget.org/v3/index.json" --skip-duplicate --no-symbols true --api-key ${{secrets.NUGET_API_KEY}}
           rm __out -Recurse -Force
