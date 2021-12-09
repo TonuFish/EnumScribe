@@ -7,7 +7,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<IsPackable>false</IsPackable>
-		<WarningLevel>0</WarningLevel> <!-- Ignore sample project warnings -->
+		<NoWarn>169</NoWarn> <!-- Ignore unused private field EnumScribe.Samples.Inventory._alpacaStock -->
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
