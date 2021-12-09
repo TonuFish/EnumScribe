@@ -521,7 +521,7 @@ namespace EnumScribe
         #region Generating
 
         // TODO: Manual text generation should be replaced with Emit style type building dumped to text.
-        // Works for now though.
+        // Works for now though. <Really should do this in next version, global namespace bug wouldn't have happened...>
 
         private string GenerateEnumsSource()
         {
@@ -595,18 +595,29 @@ using EnumScribe.Generated.Enums;
 
             foreach (var namespaceGroup in typesByNamespace)
             {
-                sb
-                    .Append("namespace ")
-                    .AppendLine(namespaceGroup.Key)
-                    .Append('{');
+                var baseIndent = 0;
+
+                if (namespaceGroup.Key != "<global namespace>")
+                {
+                    sb
+                        .Append("namespace ")
+                        .AppendLine(namespaceGroup.Key)
+                        .Append('{');
+
+                    baseIndent = 1;
+                }
 
                 foreach (var rootType in namespaceGroup)
                 {
                     sb.AppendLine();
-                    GenerateTypeText(sb, rootType, 1);
+                    GenerateTypeText(sb, rootType, baseIndent);
                 }
 
-                sb.AppendLine("}");
+                if (namespaceGroup.Key != "<global namespace>")
+                {
+                    sb.AppendLine("}");
+                }
+
                 sb.AppendLine();
             }
 
