@@ -628,12 +628,10 @@ using EnumScribe.Generated.Enums;
 
             return sb.ToString();
 
-            static void GenerateTypeText(StringBuilder sb, TypeInfo type, int baseIndentation)
+            static void GenerateTypeText(StringBuilder sb, TypeInfo type, int typeIndent)
             {
-                var classIndent = GetIndentation(baseIndentation);
-
                 sb
-                    .Append(classIndent)
+                    .Append(' ', typeIndent * IndentWidth)
                     .Append(type.Accessibility.ToText())
                     .Append(' ')
                     .Append(StaticText(type.IsStatic))
@@ -642,12 +640,12 @@ using EnumScribe.Generated.Enums;
                     .Append(' ')
                     .Append(type.Name)
                     .AppendLine(type.GenericSignature)
-                    .Append(classIndent)
+                    .Append(' ', typeIndent * IndentWidth)
                     .AppendLine("{");
 
                 if (type.ShouldScribe)
                 {
-                    var methodIndent = GetIndentation(baseIndentation + 1);
+                    var methodIndent = typeIndent + 1;
 
                     if (type.EnumTypeMembers is not null)
                     {
@@ -679,30 +677,28 @@ using EnumScribe.Generated.Enums;
                 {
                     foreach (var nestedType in type.NestedTypes)
                     {
-                        GenerateTypeText(sb, nestedType, ++baseIndentation);
+                        GenerateTypeText(sb, nestedType, typeIndent + 1);
                     }
                 }
 
-                sb.Append(classIndent).AppendLine("}");
+                sb.Append(' ', typeIndent * IndentWidth).AppendLine("}");
             }
-
-            static string GetIndentation(int indentationLevel) => new(' ', indentationLevel * IndentWidth);
 
             static string StaticText(bool isStatic) => isStatic ? "static " : string.Empty;
 
-            static void WriteAttributeText(StringBuilder sb, string attribute, string indent)
+            static void WriteAttributeText(StringBuilder sb, string attribute, int indent)
             {
                 sb
-                    .Append(indent)
+                    .Append(' ', indent * IndentWidth)
                     .Append('[')
                     .Append(attribute)
                     .AppendLine("]");
             }
 
-            static void WriteMemberText(StringBuilder sb, TypeInfo type, MemberInfo member, string indent)
+            static void WriteMemberText(StringBuilder sb, TypeInfo type, MemberInfo member, int indent)
             {
                 sb
-                    .Append(indent)
+                    .Append(' ', indent * IndentWidth)
                     .Append(member.Accessibility.ToText())
                     .Append(' ')
                     .Append(StaticText(type.IsStatic))
