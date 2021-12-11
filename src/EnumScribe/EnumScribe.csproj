@@ -39,9 +39,9 @@
 		<None Include="..\..\img\icon_256.png" Pack="true" PackagePath="\" Visible="false" />
 		<None Include="..\..\README.md" Pack="true" PackagePath="\" Visible="false" />
 		<AdditionalFiles Include="AnalyzerReleases.Shipped.md" Pack="true" />
-		<AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+		<AdditionalFiles Include="Internal\AnalyzerReleases.Unshipped.md" />
 		<AdditionalFiles Include="PublicAPI.Shipped.txt" Pack="true" />
-		<AdditionalFiles Include="PublicAPI.Unshipped.txt" />
+		<AdditionalFiles Include="Internal\PublicAPI.Unshipped.txt" />
 	</ItemGroup>
 
 	<ItemGroup Label="Private references">

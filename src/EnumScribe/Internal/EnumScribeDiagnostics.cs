@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using static Microsoft.CodeAnalysis.DiagnosticSeverity;
 
-namespace EnumScribe
+namespace EnumScribe.Internal
 {
     internal static class EnumScribeDiagnostics
     {

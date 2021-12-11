@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace EnumScribe
+namespace EnumScribe.Internal
 {
     internal class MemberInfo
     {
