@@ -1,11 +1,12 @@
-<h1 align="center">
-    <img src="img/icon_256.png" />
+<h1 style="text-align: center">
+
+![EnumScribe](https://raw.githubusercontent.com/TonuFish/EnumScribe/master/img/icon_256.png)
 </h1>
 
-<h1 align="center">
+<h1 style="text-align: center">
 
 [![Nuget](https://img.shields.io/nuget/v/EnumScribe?color=%236b2671&logo=Nuget&logoColor=%23ba2f8c&style=for-the-badge)](https://www.nuget.org/packages/EnumScribe)
-[![Nuget](https://img.shields.io/nuget/dt/EnumScribe?color=%236b2671&logo=Nuget&logoColor=%23ba2f8c&style=for-the-badge)](https://www.nuget.org/packages/EnumScribe)
+[![Downloads](https://img.shields.io/nuget/dt/EnumScribe?color=%236b2671&logo=Nuget&logoColor=%23ba2f8c&style=for-the-badge)](https://www.nuget.org/packages/EnumScribe)
 </h1>
 
 # EnumScribe
@@ -14,7 +15,7 @@ An easy-to-use source generator providing efficient access to enum description t
 
 ## Why?
 
-When binding an enum to UI component, it's uncommon to be able to display the enum identifier itself, EG. "OutOfStock" doesn't adhere to english grammar. Working around this usually either comes with a runtime cost (reflection) or maintainability cost (manual enum -> text mapping)
+When binding an enum to a UI component, it's uncommon to be able to display the enum identifier itself, EG. "OutOfStock" doesn't adhere to english grammar. Working around this usually either comes with a runtime cost (reflection) or maintainability cost (manual enum -> text mapping)
 
 EnumScribe simplifies the process by generating the mapping at compile time based on `Description` attributes and exposing it via properties added to the type, making the text easier to consume in most UI frameworks.
 
