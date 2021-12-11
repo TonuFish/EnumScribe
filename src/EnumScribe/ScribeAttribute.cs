@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
-using static EnumScribe.EnumScribeConsts;
+using static EnumScribe.Internal.EnumScribeConsts;
 
 namespace EnumScribe
 {

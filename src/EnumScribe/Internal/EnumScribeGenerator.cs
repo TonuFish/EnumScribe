@@ -6,9 +6,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Globalization;
-using static EnumScribe.EnumScribeConsts;
+using static EnumScribe.Internal.EnumScribeConsts;
 
-namespace EnumScribe
+namespace EnumScribe.Internal
 {
     [Generator(LanguageNames.CSharp)]
     internal sealed class EnumScribeGenerator : ISourceGenerator
