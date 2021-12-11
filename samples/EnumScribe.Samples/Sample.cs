@@ -51,7 +51,7 @@ namespace EnumScribe.Samples
         Retired,
     }
 
-    public static class Program
+    public static class Sample
     {
         public static void Main()
         {
