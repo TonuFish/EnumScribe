@@ -133,14 +133,20 @@ namespace EnumScribe.Internal
 
         private static TypeInfo GetTypeInfo(INamedTypeSymbol symbol)
         {
-            var classInfo = new TypeInfo
+            // Symbol will always be a Type (not Namespace)
+
+            var typeInfo = new TypeInfo
             {
-                Accessibility = symbol.DeclaredAccessibility,
                 GenericSignature = GetGenericSignature(symbol),
-                IsStatic = symbol.IsStatic,
                 Name = symbol.Name,
                 Namespace = symbol.ContainingNamespace.ToDisplayString(),
-                Type = symbol.IsRecord ? Type.Record : Type.Class
+                Type = symbol.TypeKind is TypeKind.Class
+                    ? symbol.IsRecord
+                        ? Type.Record
+                        : Type.Class
+                    : symbol.IsRecord
+                        ? Type.RecordStruct
+                        : Type.Struct
             };
 
             if (((TypeDeclarationSyntax)symbol.DeclaringSyntaxReferences[0].GetSyntax())
@@ -149,10 +155,10 @@ namespace EnumScribe.Internal
             {
                 // `partial` keyword must be delcared on every reference, therefore checking any (the first one in
                 // this case) is acceptable. Diagnostic error is reported at call site as context differs.
-                classInfo.IsPartial = false;
+                typeInfo.IsPartial = false;
             }
 
-            return classInfo;
+            return typeInfo;
         }
 
         private bool GetScribeArguments(INamedTypeSymbol symbol,
@@ -312,6 +318,7 @@ namespace EnumScribe.Internal
                 var memberNameWithSuffix = memberSymbolData.Symbol.Name + typeInfo.Suffix;
                 var accessibility = memberSymbolData.Symbol.DeclaredAccessibility;
                 var isPartialMethod = false;
+                var isStatic = memberSymbolData.Symbol.IsStatic;
 
                 if (typeMemberNameToSymbols.TryGetValue(memberNameWithSuffix, out var existingSymbols))
                 {
@@ -323,6 +330,8 @@ namespace EnumScribe.Internal
                         && m.IsPartialDefinition
                         && m.PartialImplementationPart is null
                         && m.IsGenericMethod == false
+                        // Method scoping is compatible; only illegal permutation is static method + instance member
+                        && (memberSymbolData.Symbol.IsStatic || (m.IsStatic == false))
                         && m.Parameters.IsEmpty
                         // Method nullability is compatible; method cannot return a notnull string if member is nullable
                         && (
@@ -355,6 +364,7 @@ namespace EnumScribe.Internal
                         // Partial method will be scribed instead of a get-only property
                         accessibility = validSymbol.DeclaredAccessibility;
                         isPartialMethod = true;
+                        isStatic = validSymbol.IsStatic;
                     }
                     else
                     {
@@ -388,7 +398,7 @@ namespace EnumScribe.Internal
                     Name = memberSymbolData.Symbol.Name,
                     IsNullable = memberSymbolData.IsNullable,
                     IsPartialMethod = isPartialMethod,
-                    IsStatic = memberSymbolData.Symbol.IsStatic,
+                    IsStatic = isStatic,
                 });
 
                 if (isPartialMethod == false)
@@ -632,9 +642,6 @@ using EnumScribe.Generated.Enums;
             {
                 sb
                     .Append(' ', typeIndent * IndentWidth)
-                    .Append(type.Accessibility.ToText())
-                    .Append(' ')
-                    .Append(StaticText(type.IsStatic))
                     .Append("partial ")
                     .Append(type.Type.ToText())
                     .Append(' ')
@@ -655,11 +662,11 @@ using EnumScribe.Generated.Enums;
                             {
                                 if (type.JsonIgnoreNewtonsoft)
                                 {
-                                    WriteAttributeText(sb, JsonIgnoreNewtonsoftAttribute, methodIndent);
+                                    WriteMemberAttributeText(sb, JsonIgnoreNewtonsoftAttribute, methodIndent);
                                 }
                                 if (type.JsonIgnoreSystem)
                                 {
-                                    WriteAttributeText(sb, JsonIgnoreSystemAttribute, methodIndent);
+                                    WriteMemberAttributeText(sb, JsonIgnoreSystemAttribute, methodIndent);
                                 }
                             }
 
@@ -686,7 +693,7 @@ using EnumScribe.Generated.Enums;
 
             static string StaticText(bool isStatic) => isStatic ? "static " : string.Empty;
 
-            static void WriteAttributeText(StringBuilder sb, string attribute, int indent)
+            static void WriteMemberAttributeText(StringBuilder sb, string attribute, int indent)
             {
                 sb
                     .Append(' ', indent * IndentWidth)
@@ -701,7 +708,7 @@ using EnumScribe.Generated.Enums;
                     .Append(' ', indent * IndentWidth)
                     .Append(member.Accessibility.ToText())
                     .Append(' ')
-                    .Append(StaticText(type.IsStatic))
+                    .Append(StaticText(member.IsStatic))
                     .Append(member.IsPartialMethod ? "partial " : string.Empty)
                     .Append(member.IsNullable ? "string? " : "string ")
                     .Append(member.Name)
