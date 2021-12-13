@@ -1,9 +1,9 @@
-<h1 style="text-align: center">
+<h1 align="center" style="text-align: center">
 
 ![EnumScribe](https://raw.githubusercontent.com/TonuFish/EnumScribe/master/img/icon_256.png)
 </h1>
 
-<h1 style="text-align: center">
+<h1 align="center" style="text-align: center">
 
 [![Nuget](https://img.shields.io/nuget/v/EnumScribe?color=%236b2671&logo=Nuget&logoColor=%23ba2f8c&style=for-the-badge)](https://www.nuget.org/packages/EnumScribe)
 [![Downloads](https://img.shields.io/nuget/dt/EnumScribe?color=%236b2671&logo=Nuget&logoColor=%23ba2f8c&style=for-the-badge)](https://www.nuget.org/packages/EnumScribe)
