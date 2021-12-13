@@ -58,6 +58,8 @@ namespace EnumScribe.Internal
             {
                 Type.Class => "class",
                 Type.Record => "record",
+                Type.Struct => "struct",
+                Type.RecordStruct => "record struct",
                 // Default case should never happen
                 _ => string.Empty,
             };

@@ -5,7 +5,6 @@ namespace EnumScribe.Internal
 {
     internal sealed class TypeInfo
     {
-        public Accessibility Accessibility { get; set; }
         public string FullName => $"{Namespace}.{Name}{GenericSignature}";
         public string? GenericSignature { get; set; }
         public bool ImplementPartialMethods { get; set; } = true;
@@ -15,7 +14,6 @@ namespace EnumScribe.Internal
         /// </summary>
         public bool IsPartial { get; set; } = true;
 
-        public bool IsStatic { get; set; }
         public bool JsonIgnoreNewtonsoft { get; set; }
         public bool JsonIgnoreSystem { get; set; }
         public string Name { get; set; } = null!;
@@ -34,7 +32,7 @@ namespace EnumScribe.Internal
 
         /// <summary>
         /// <see langword="true"/> if the <see cref="INamedTypeSymbol"/> represented by this <see cref="TypeInfo"/>
-        /// and all enclosing classes are <see langword="partial"/>; otherwise <see langword="false"/>.
+        /// and all enclosing types are <see langword="partial"/>; otherwise <see langword="false"/>.
         /// </summary>
         public bool HasFullPartialLineage
         {
@@ -56,5 +54,7 @@ namespace EnumScribe.Internal
     {
         Class = 1,
         Record = 2,
+        Struct = 3,
+        RecordStruct = 4,
     }
 }
