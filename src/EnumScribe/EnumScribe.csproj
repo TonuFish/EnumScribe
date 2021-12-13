@@ -18,7 +18,7 @@
 	<PropertyGroup Label="Nuget configuration">
 		<!--https://docs.microsoft.com/en-us/nuget/reference/msbuild-targets#pack-target-->
 		<PackageId>EnumScribe</PackageId>
-		<PackageVersion>1.0.1</PackageVersion>
+		<PackageVersion>1.1.0</PackageVersion>
 		<Authors>Tonu</Authors>
 		<Title>EnumScribe</Title>
 		<Description>Generates string properties to access enum descriptions on marked types. Primarily used to simplify binding enum description text in UI elements and avoid runtime reflection.</Description>
@@ -28,7 +28,7 @@
 		<PackageIconUrl>https://github.com/TonuFish/EnumScribe/tree/master/img/icon_256.png</PackageIconUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>description attribute description-attribute enum C# generator source-generator</PackageTags>
-		<PackageReleaseNotes>Include analyzer releases, fix global namespace issue.</PackageReleaseNotes>
+		<PackageReleaseNotes>TODO: ASDFJKL;ASDFJKL;ASDFJKL;ASDFJKL;ASDFJKL;ASDFJKL;ASDFJKL;ASDFJKL;</PackageReleaseNotes>
 		<RepositoryUrl>https://github.com/TonuFish/EnumScribe.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<RepositoryBranch>master</RepositoryBranch>

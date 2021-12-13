@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
+using static EnumScribe.Internal.EnumScribeConsts;
 
 namespace EnumScribe.Internal
 {
@@ -7,7 +8,7 @@ namespace EnumScribe.Internal
     {
         public string FullName => $"{Namespace}.{Name}{GenericSignature}";
         public string? GenericSignature { get; set; }
-        public bool ImplementPartialMethods { get; set; } = true;
+        public bool ImplementPartialMethods { get; set; } = Defaults.ImplementPartialMethods;
 
         /// <summary>
         /// Defaults to <see langword="true"/>.
