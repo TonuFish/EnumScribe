@@ -5,6 +5,8 @@ namespace EnumScribe.Internal
 {
     internal static class EnumScribeConsts
     {
+        public const string PackageVersion = "1.1.0";
+        public const string ExtensionsNamespace = "EnumScribe.Extensions";
         public const string JsonIgnoreNewtonsoftAttribute = "Newtonsoft.Json.JsonIgnoreAttribute";
         public const string JsonIgnoreSystemAttribute = "System.Text.Json.Serialization.JsonIgnoreAttribute";
 

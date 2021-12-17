@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EnumScribe.Extensions;
+using System;
 using System.ComponentModel;
 
 namespace EnumScribe.Samples
@@ -60,10 +61,11 @@ namespace EnumScribe.Samples
 
             Inventory inv = new() { CakeStock = StockLevel.Low, FishStock = StockLevel.OutOfStock };
             InventoryHistory invHist = new() { OwlStock = StockLevel.Retired };
-            Console.WriteLine(inv.CakeStockDescription);    // Low stock
-            Console.WriteLine(inv.FishStockDescription);    // Out of stock
-            Console.WriteLine(invHist.dragonStockText);     // Available
-            Console.WriteLine(invHist.OwlStockText());        // Unavailable
+            Console.WriteLine(inv.CakeStockDescription);            // Low stock
+            Console.WriteLine(inv.FishStockDescription);            // Out of stock
+            Console.WriteLine(invHist.dragonStockText);             // In stock
+            Console.WriteLine(invHist.OwlStockText());              // Unavailable
+            Console.WriteLine(StockLevel.Low.DescriptionText());    // Low stock
         }
     }
 }
