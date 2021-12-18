@@ -1,4 +1,4 @@
-﻿using EnumScribe.Extensions;
+﻿using EnumScribe.Extensions; // Includes enum extensions for scribed enums
 using System;
 using System.ComponentModel;
 

@@ -27,10 +27,13 @@ EnumScribe simplifies the process by generating the mapping at compile time base
 - Selectively scribe enums by accessibility and member type
 - Ignore individual enums with `NoScribe`
 - Opt out of serializing generated properties with `JsonIgnore` (Supports [Json.NET](https://www.newtonsoft.com/json) and [System.Text.Json](https://docs.microsoft.com/en-us/dotnet/api/system.text.json))
+- Access descriptions for scribed enums directly by using the `DescriptionText()` extension method (included in the `EnumScribe.Extensions` namespace)
 
 ## Basic usage
 
 ```Csharp
+using EnumScribe;
+
 // Source code
 [Scribe]
 public partial class MyDto
@@ -82,6 +85,6 @@ Compiler errors [CS1061](https://docs.microsoft.com/en-us/dotnet/csharp/language
 - Analyzer warning for unnecessary `NoScribe` attributes
 - Localise diagnostic text
 - Scribe `T` in generic types where `T` is an enum
-- New attribute `ReScribe` to manually override scribe rules on a property/field basis (suffix, accessibility)
+- New attribute `ReScribe` to manually override scribe rules on a property/field basis (suffix, accessibility, json ignore)
 - Acknowledge `ReScribe` attribute on property without the containing class requiring ScribeEnum
-- Scribing structs and record structs
+- Scribe functionality for structs and record structs
