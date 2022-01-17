@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 
-namespace EnumScribe.Internal
+namespace EnumScribe.Generator
 {
     internal static class EnumScribeConsts
     {
@@ -18,7 +18,7 @@ namespace EnumScribe.Internal
             public const bool IncludeFields = false;
             public const bool JsonIgnoreNewtonsoft = false;
             public const bool JsonIgnoreSystem = false;
-            public const string Suffix = ScribeAttribute.DefaultSuffix;
+            public const string Suffix = "Description";
 
             public static HashSet<Accessibility> MutableAccessibility() => AccessModifier.ToAccessibility();
         }

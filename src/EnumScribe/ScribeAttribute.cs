@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using static EnumScribe.Internal.EnumScribeConsts;
 
 namespace EnumScribe
 {
@@ -32,13 +31,13 @@ namespace EnumScribe
         /// Indicates that valid partial methods should be implemented, otherwise resulting in a compilation error.<br/>
         /// Defaults to <see langword="true"/>.
         /// </summary>
-        public bool ImplementPartialMethods { get; set; } = Defaults.ImplementPartialMethods;
+        public bool ImplementPartialMethods { get; set; } = true;
 
         /// <summary>
         /// Indicates that field members should be scribed.<br/>
         /// Defaults to <see langword="false"/>.
         /// </summary>
-        public bool IncludeFields { get; set; } = Defaults.IncludeFields;
+        public bool IncludeFields { get; set; } = false;
 
         /// <summary>
         /// Indicates that all scribe generated properties will be declared with <c>JsonIgnore</c> attribute[s].<br/>
@@ -51,7 +50,7 @@ namespace EnumScribe
         ///     <item><description>Json.NET (Newtonsoft)</description></item>
         /// </list>
         /// </remarks>
-        public bool JsonIgnore { get; set; } = Defaults.JsonIgnoreNewtonsoft || Defaults.JsonIgnoreSystem;
+        public bool JsonIgnore { get; set; } = false;
 
         /// <summary>
         /// Gets the suffix text used by this instance of the <see cref="ScribeAttribute"/> class.<br/>

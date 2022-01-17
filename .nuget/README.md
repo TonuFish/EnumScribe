@@ -1,5 +1,3 @@
-![EnumScribe](https://raw.githubusercontent.com/TonuFish/EnumScribe/master/img/icon_256.png)
-
 # EnumScribe
 
 An easy-to-use source generator providing efficient access to enum description text.

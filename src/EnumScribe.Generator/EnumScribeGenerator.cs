@@ -7,10 +7,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Globalization;
-using static EnumScribe.Internal.EnumScribeConsts;
+using static EnumScribe.Generator.EnumScribeConsts;
 using Microsoft.CodeAnalysis.Text;
 
-namespace EnumScribe.Internal
+namespace EnumScribe.Generator
 {
     [Generator(LanguageNames.CSharp)]
     internal sealed class EnumScribeGenerator : ISourceGenerator

@@ -1,8 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
-using static EnumScribe.Internal.EnumScribeConsts;
+using static EnumScribe.Generator.EnumScribeConsts;
 
-namespace EnumScribe.Internal
+namespace EnumScribe.Generator
 {
     internal sealed class TypeInfo
     {
