@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace EnumScribe.Internal
+namespace EnumScribe.Generator
 {
     internal sealed class EnumScribeSyntaxReceiver : ISyntaxContextReceiver
     {

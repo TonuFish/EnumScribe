@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace EnumScribe.Internal
+namespace EnumScribe.Generator
 {
     // Massive thanks to Kirill for RoslynQuoter (https://github.com/KirillOsenkov/RoslynQuoter)
     // Unbelievably handy to get a solid starting point when writing a syntax factory :)

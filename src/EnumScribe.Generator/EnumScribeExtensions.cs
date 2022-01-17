@@ -1,9 +1,9 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
-using static EnumScribe.Internal.EnumScribeConsts;
+using static EnumScribe.Generator.EnumScribeConsts;
 
-namespace EnumScribe.Internal
+namespace EnumScribe.Generator
 {
     internal static class EnumScribeExtensions
     {

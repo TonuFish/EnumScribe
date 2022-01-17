@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace EnumScribe.Internal
+namespace EnumScribe.Generator
 {
     internal sealed class EnumInfo
     {
