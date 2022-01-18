@@ -73,7 +73,6 @@ Compiler errors [CS1061](https://docs.microsoft.com/en-us/dotnet/csharp/language
 - Update to source generators 2.0 (`IIncrementalGenerator`)
 - Proper tests (pending package update)
 - Benchmarks
-- Analyzer warning for unnecessary `NoScribe` attributes
 - Localise diagnostic text
 - Scribe `T` in generic types where `T` is an enum
 - New attribute `ReScribe` to manually override scribe rules on a property/field basis (suffix, accessibility, json ignore)
