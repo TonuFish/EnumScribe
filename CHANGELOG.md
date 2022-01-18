@@ -1,5 +1,10 @@
 # Release History
 
+## 1.1.1
+
+- Added `NoScribe` usage analyzers
+- Reduce package size by ~45%
+
 ## 1.1.0
 
 - Allow public access to description extension methods for targeted enums
