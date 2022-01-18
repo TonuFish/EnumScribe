@@ -138,5 +138,39 @@ namespace EnumScribe.Generator
             helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES1003.md",
             customTags: WellKnownDiagnosticTags.Unnecessary
         );
+
+        /// <summary>
+        /// Remove redundant no scribe attribute on member of non-scribed type.<br />
+        /// <b>LOCATION:</b> NoScribe attribute declaration<br />
+        /// <b>ARGS:</b> Member identifier
+        /// </summary>
+        internal static readonly DiagnosticDescriptor ES1004 = new
+        (
+            id: "ES1004",
+            title: "Remove redundant 'NoScribe' attribute on member of non-scribed type",
+            messageFormat: "Redundant 'NoScribe' attribute on member '{0}'; member does not belong to a scribed type",
+            category: "EnumScribe.Redundancy",
+            defaultSeverity: Warning,
+            isEnabledByDefault: true,
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES1004.md",
+            customTags: WellKnownDiagnosticTags.Unnecessary
+        );
+
+        /// <summary>
+        /// Remove redundant no scribe attribute on non-enum member.<br />
+        /// <b>LOCATION:</b> NoScribe attribute declaration<br />
+        /// <b>ARGS:</b> Member identifier
+        /// </summary>
+        internal static readonly DiagnosticDescriptor ES1005 = new
+        (
+            id: "ES1005",
+            title: "Remove redundant 'NoScribe' attribute on non-enum member",
+            messageFormat: "Redundant 'NoScribe' attribute on member '{0}'; member is not an enum",
+            category: "EnumScribe.Redundancy",
+            defaultSeverity: Warning,
+            isEnabledByDefault: true,
+            helpLinkUri: "https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES1005.md",
+            customTags: WellKnownDiagnosticTags.Unnecessary
+        );
     }
 }

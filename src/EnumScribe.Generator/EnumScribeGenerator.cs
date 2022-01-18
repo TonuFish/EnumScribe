@@ -64,6 +64,9 @@ namespace EnumScribe.Generator
                 var partialsSource = GeneratePartialsSource();
                 context.AddSource(PartialsHintName, partialsSource);
             }
+
+            ValidateNoScribedFieldSymbols(receiver.NoScribeAttributeFieldSymbols);
+            ValidateNoScribedPropertySymbols(receiver.NoScribeAttributePropertySymbols);
         }
 
         #region Parsing
@@ -141,6 +144,9 @@ namespace EnumScribe.Generator
             }
         }
 
+        private static Location GetAttributeLocation(AttributeData attribute)
+            => attribute.ApplicationSyntaxReference!.GetSyntax().GetLocation();
+
         private static TypeInfo GetTypeInfo(INamedTypeSymbol symbol)
         {
             // Symbol will always be a Type (not Namespace)
@@ -186,7 +192,7 @@ namespace EnumScribe.Generator
             accessibility = Defaults.MutableAccessibility();
 
             var attribute = symbol.GetAttributes().First(x => x.AttributeClass?.Name == nameof(ScribeAttribute));
-            attributeLocation = attribute.ApplicationSyntaxReference!.GetSyntax().GetLocation();
+            attributeLocation = GetAttributeLocation(attribute);
 
             if (attribute.ConstructorArguments.Length == 1)
             {
@@ -277,19 +283,7 @@ namespace EnumScribe.Generator
             //! Local func closes over accessibility
             bool IsEnumMember<T>((T Symbol, INamedTypeSymbol Type, bool IsNullable) member) where T : ISymbol
                 => accessibility.Contains(member.Symbol.DeclaredAccessibility)
-                    && (
-                        member.Type is INamedTypeSymbol t
-                        && (
-                            // Enum
-                            t.TypeKind is TypeKind.Enum
-                            || (
-                                // Nullable<Enum>
-                                t.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T
-                                // One type arg is guaranteed by Nullable<T>
-                                && t.TypeArguments[0].TypeKind is TypeKind.Enum
-                            )
-                        )
-                    );
+                    && member.Type is INamedTypeSymbol t && IsMemberSymbolAnEnum(t);
 
             var typeEnumMemberSymbols = typeSymbol.GetMembers()
                 .OfType<IPropertySymbol>()
@@ -511,34 +505,6 @@ namespace EnumScribe.Generator
             return sb.ToString();
         }
 
-        private static bool IsValidIdentifierSuffix(ReadOnlySpan<char> suffix)
-        {
-            for (int ii = 0; ii < suffix.Length; ++ii)
-            {
-                switch (char.GetUnicodeCategory(suffix[ii]))
-                {
-                    // Categories cover all legal non-leading characters in a type member identifier
-                    // ref. ECMA-334:2017 5th ed. pg. 19; "7.4.3 Identifiers"
-                    case UnicodeCategory.ConnectorPunctuation:
-                    case UnicodeCategory.DecimalDigitNumber:
-                    case UnicodeCategory.Format:
-                    case UnicodeCategory.LetterNumber:
-                    case UnicodeCategory.LowercaseLetter:
-                    case UnicodeCategory.ModifierLetter:
-                    case UnicodeCategory.NonSpacingMark:
-                    case UnicodeCategory.OtherLetter:
-                    case UnicodeCategory.SpacingCombiningMark:
-                    case UnicodeCategory.TitlecaseLetter:
-                    case UnicodeCategory.UppercaseLetter:
-                        break;
-                    default:
-                        return false;
-                }
-            }
-
-            return true;
-        }
-
         #endregion Parsing
 
         #region Generating
@@ -677,5 +643,102 @@ using ").Append(ExtensionsNamespace).AppendLine(@";
         }
 
         #endregion Generating
+
+        #region Validation
+
+        private static bool IsValidIdentifierSuffix(ReadOnlySpan<char> suffix)
+        {
+            for (int ii = 0; ii < suffix.Length; ++ii)
+            {
+                switch (char.GetUnicodeCategory(suffix[ii]))
+                {
+                    // Categories cover all legal non-leading characters in a type member identifier
+                    // ref. ECMA-334:2017 5th ed. pg. 19; "7.4.3 Identifiers"
+                    case UnicodeCategory.ConnectorPunctuation:
+                    case UnicodeCategory.DecimalDigitNumber:
+                    case UnicodeCategory.Format:
+                    case UnicodeCategory.LetterNumber:
+                    case UnicodeCategory.LowercaseLetter:
+                    case UnicodeCategory.ModifierLetter:
+                    case UnicodeCategory.NonSpacingMark:
+                    case UnicodeCategory.OtherLetter:
+                    case UnicodeCategory.SpacingCombiningMark:
+                    case UnicodeCategory.TitlecaseLetter:
+                    case UnicodeCategory.UppercaseLetter:
+                        break;
+                    default:
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsMemberSymbolAnEnum(INamedTypeSymbol symbol)
+            // Enum
+            => symbol.TypeKind is TypeKind.Enum
+                // Nullable<Enum>
+                || (symbol.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T
+                    // One type arg is guaranteed by Nullable<T>
+                    && symbol.TypeArguments[0].TypeKind is TypeKind.Enum);
+
+        private static bool IsMemberSymbolInScribedType(INamedTypeSymbol symbol)
+            => symbol.GetAttributes().Any(x => x.AttributeClass?.Name == nameof(ScribeAttribute));
+
+        private void ValidateNoScribedFieldSymbols(List<IFieldSymbol> noScribeFieldSymbols)
+        {
+            foreach (var fieldSymbol in noScribeFieldSymbols)
+            {
+                if (IsMemberSymbolInScribedType(fieldSymbol.ContainingType) == false)
+                {
+                    var attribute = fieldSymbol.GetAttributes()
+                        .First(x => x.AttributeClass?.Name == nameof(NoScribeAttribute));
+
+                    _context.ReportDiagnostic(Diagnostic.Create(
+                        descriptor: EnumScribeDiagnostics.ES1004,
+                        location: GetAttributeLocation(attribute),
+                        fieldSymbol.Name));
+                }
+                else if (IsMemberSymbolAnEnum((INamedTypeSymbol)fieldSymbol.Type) == false)
+                {
+                    var attribute = fieldSymbol.GetAttributes()
+                        .First(x => x.AttributeClass?.Name == nameof(NoScribeAttribute));
+
+                    _context.ReportDiagnostic(Diagnostic.Create(
+                        descriptor: EnumScribeDiagnostics.ES1005,
+                        location: GetAttributeLocation(attribute),
+                        fieldSymbol.Name));
+                }
+            }
+        }
+
+        private void ValidateNoScribedPropertySymbols(List<IPropertySymbol> noScribePropertySymbols)
+        {
+            foreach (var propertySymbol in noScribePropertySymbols)
+            {
+                if (IsMemberSymbolInScribedType(propertySymbol.ContainingType) == false)
+                {
+                    var attribute = propertySymbol.GetAttributes()
+                        .First(x => x.AttributeClass?.Name == nameof(NoScribeAttribute));
+
+                    _context.ReportDiagnostic(Diagnostic.Create(
+                        descriptor: EnumScribeDiagnostics.ES1004,
+                        location: GetAttributeLocation(attribute),
+                        propertySymbol.Name));
+                }
+                else if (IsMemberSymbolAnEnum((INamedTypeSymbol)propertySymbol.Type) == false)
+                {
+                    var attribute = propertySymbol.GetAttributes()
+                        .First(x => x.AttributeClass?.Name == nameof(NoScribeAttribute));
+
+                    _context.ReportDiagnostic(Diagnostic.Create(
+                        descriptor: EnumScribeDiagnostics.ES1005,
+                        location: GetAttributeLocation(attribute),
+                        propertySymbol.Name));
+                }
+            }
+        }
+
+        #endregion Validation
     }
 }

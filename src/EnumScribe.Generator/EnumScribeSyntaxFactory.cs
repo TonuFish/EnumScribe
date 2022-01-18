@@ -64,7 +64,7 @@ namespace EnumScribe.Generator
         {
             MemberDeclarationSyntax[] enumMethodSyntaxes = new MemberDeclarationSyntax[enumInfos.Count];
 
-            for(var ii = 0; ii < enumInfos.Count; ++ii)
+            for (var ii = 0; ii < enumInfos.Count; ++ii)
             {
                 var enumInfo = enumInfos[ii];
                 var switchExpressionArmsSyntax = GenerateEnumMethodSwitchArmsSyntax(enumInfo);

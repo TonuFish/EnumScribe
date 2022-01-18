@@ -1,4 +1,13 @@
-﻿## Release 1.0
+﻿## Release 1.1.1
+
+### New Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-------
+ES1004 | EnumScribe.Redundancy | Warning | EnumScribeDiagnostics, [Documentation](https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES1004.md)
+ES1005 | EnumScribe.Redundancy | Warning | EnumScribeDiagnostics, [Documentation](https://github.com/TonuFish/EnumScribe/blob/master/docs/analyzers/ES1005.md)
+
+## Release 1.0.0
 
 ### New Rules
 
