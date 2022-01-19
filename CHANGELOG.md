@@ -3,7 +3,7 @@
 ## 1.1.1
 
 - Added `NoScribe` usage analyzers
-- Reduce package size by ~45%
+- Reduce package size by ~38%
 
 ## 1.1.0
 
