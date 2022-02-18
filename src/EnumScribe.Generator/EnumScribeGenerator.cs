@@ -12,9 +12,16 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace EnumScribe.Generator
 {
+    /// <summary>
+    /// Single generator responsible for parsing all relevant syntax nodes, generating source files and emitting
+    /// analyzer diagnostics.
+    /// </summary>
     [Generator(LanguageNames.CSharp)]
     internal sealed class EnumScribeGenerator : ISourceGenerator
     {
+        /// <summary>
+        /// The output file name of the enum extensions file.
+        /// </summary>
         public const string EnumsHintName = "Enums.EnumScribe.g.cs";
 
         /// <summary>
@@ -22,22 +29,37 @@ namespace EnumScribe.Generator
         /// </summary>
         /// <remarks>
         /// In the absence of having a consistent way to identify the global namespace symbol, match by name.<br/>
-        /// <c>Context.Compilation.GlobalNamespace</c> doesn't match a given symbol <c>ContainingNamespace</c>
+        /// Unfortunately <c>Context.Compilation.GlobalNamespace</c> doesn't match a given symbol's
+        /// <c>ContainingNamespace</c>.
         /// </remarks>
         public const string GlobalNamespaceName = "<global namespace>";
 
+        /// <summary>
+        /// The output file name of the partials file.
+        /// </summary>
         public const string PartialsHintName = "Partials.EnumScribe.g.cs";
+
+        /// <summary>
+        /// The number of whitespaces (' ') used each indentation level in the generated source code.
+        /// </summary>
         private const int IndentWidth = 4;
 
+        /// <summary>
+        /// Context associated with the current generator run. Used to access the current compilation, emit analyzer
+        /// diagnostics and register additional source files.
+        /// </summary>
         private GeneratorExecutionContext _context;
+
         private readonly List<EnumInfo> _enumInfos = new();
         private readonly List<TypeInfo> _typeInfos = new();
 
+        /// <inheritdoc />
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new EnumScribeSyntaxReceiver());
         }
 
+        /// <inheritdoc />
         public void Execute(GeneratorExecutionContext context)
         {
             if (context.SyntaxContextReceiver is not EnumScribeSyntaxReceiver receiver)
@@ -46,7 +68,7 @@ namespace EnumScribe.Generator
             }
 
 #if LAUNCH_DEBUGGER
-            // Debug the generator during build (instead of RoslynComponent run)
+            // Debug the generator during a build where the analyzer is referenced (instead of on RoslynComponent run)
             if (System.Diagnostics.Debugger.IsAttached == false)
             {
             System.Diagnostics.Debugger.Launch();
@@ -58,6 +80,7 @@ namespace EnumScribe.Generator
 
             if (_typeInfos.Any(x => x.ShouldScribe))
             {
+                // If any type may be scribed (regardless of overall success), create source files
                 var enumsSource = GenerateEnumsSource();
                 context.AddSource(EnumsHintName, enumsSource);
 
@@ -65,12 +88,20 @@ namespace EnumScribe.Generator
                 context.AddSource(PartialsHintName, partialsSource);
             }
 
+            // NoScribe attribute validation
             ValidateNoScribedFieldSymbols(receiver.NoScribeAttributeFieldSymbols);
             ValidateNoScribedPropertySymbols(receiver.NoScribeAttributePropertySymbols);
         }
 
         #region Parsing
 
+        /// <summary>
+        /// Parses scribed types in the current compilation, gathering the required information for source generation
+        /// and emitting analyzer diagnostics as necessary.
+        /// </summary>
+        /// <param name="scribedTypeSymbols">
+        /// The type symbols marked with <see cref="ScribeAttribute"/> found in this compilation.
+        /// </param>
         private void ParseScribedSymbols(List<INamedTypeSymbol> scribedTypeSymbols)
         {
             _typeInfos.Capacity = scribedTypeSymbols.Count;
@@ -144,12 +175,22 @@ namespace EnumScribe.Generator
             }
         }
 
+        /// <summary>
+        /// Gets the source code location of the supplied attribute.
+        /// </summary>
+        /// <param name="attribute">The attribute to locate.</param>
+        /// <returns>The location information of the supplied attribute.</returns>
         private static Location GetAttributeLocation(AttributeData attribute)
             => attribute.ApplicationSyntaxReference!.GetSyntax().GetLocation();
 
+        /// <summary>
+        /// Parses the supplied compilation symbol into the generator's internal type representation.
+        /// </summary>
+        /// <param name="symbol">The compilation symbol to parse.</param>
+        /// <returns>The parsed type data object.</returns>
         private static TypeInfo GetTypeInfo(INamedTypeSymbol symbol)
         {
-            // Symbol will always be a Type (not Namespace)
+            // Symbol will always be a Type (not Namespace) - Sanity check omitted
 
             var typeInfo = new TypeInfo
             {
@@ -177,6 +218,37 @@ namespace EnumScribe.Generator
             return typeInfo;
         }
 
+        /// <summary>
+        /// Parses the <see cref="ScribeAttribute"/> arguments from the supplied compilation symbol.
+        /// </summary>
+        /// <param name="symbol">The compilation symbol to parse.</param>
+        /// <param name="attributeLocation">
+        /// The location of the <see cref="ScribeAttribute"/> in the compilation source code.
+        /// </param>
+        /// <param name="suffix">
+        /// The nominated <see cref="ScribeAttribute.Suffix"/> if present and valid; otherwise <see cref="Defaults.Suffix"/>.
+        /// </param>
+        /// <param name="includeFields">
+        /// The nominated <see cref="ScribeAttribute.IncludeFields"/>; otherwise <see cref="Defaults.IncludeFields"/>.
+        /// </param>
+        /// <param name="implementPartialMethods">
+        /// The nominated <see cref="ScribeAttribute.ImplementPartialMethods"/>;
+        /// otherwise <see cref="Defaults.ImplementPartialMethods"/>.
+        /// </param>
+        /// <param name="jsonIgnoreNewtonsoft">
+        /// The nominated <see cref="ScribeAttribute.JsonIgnore"/>; otherwise <see cref="Defaults.JsonIgnoreNewtonsoft"/>.
+        /// </param>
+        /// <param name="jsonIgnoreSystem">
+        /// The nominated <see cref="ScribeAttribute.JsonIgnore"/>; otherwise <see cref="Defaults.JsonIgnoreSystem"/>.
+        /// </param>
+        /// <param name="accessibility">
+        /// The nominated <see cref="ScribeAttribute.AccessModifiers"/> as <see cref="Accessibility"/>;
+        /// otherwise <see cref="Defaults.MutableAccessibility"/>.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if specified <see cref="ScribeAttribute.Suffix"/> is valid or omitted;
+        /// otherwise <see langword="false"/>.
+        /// </returns>
         private bool GetScribeArguments(INamedTypeSymbol symbol,
             out Location attributeLocation,
             out string suffix,
@@ -196,9 +268,10 @@ namespace EnumScribe.Generator
 
             if (attribute.ConstructorArguments.Length == 1)
             {
+                // Validate user supplied suffix
                 var userSuffix = (string?)attribute.ConstructorArguments[0].Value;
 
-                if (userSuffix is null || (IsValidIdentifierSuffix(userSuffix!.AsSpan()) == false))
+                if (userSuffix is null || (IsValidTypeMemberIdentifierSuffix(userSuffix!.AsSpan()) == false))
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
                         descriptor: EnumScribeDiagnostics.ES0001,
@@ -212,6 +285,7 @@ namespace EnumScribe.Generator
 
             foreach (var arg in attribute.NamedArguments)
             {
+                // Overwrite defaults with user args
                 switch (arg.Key)
                 {
                     case nameof(ScribeAttribute.ImplementPartialMethods):
@@ -221,6 +295,7 @@ namespace EnumScribe.Generator
                         includeFields = (bool)arg.Value.Value!;
                         break;
                     case nameof(ScribeAttribute.JsonIgnore):
+                        // Checks if the ignore attribute of each supported serializer available
                         if (IsTypeAvailable(JsonIgnoreNewtonsoftAttribute)) { jsonIgnoreNewtonsoft = true; }
                         if (IsTypeAvailable(JsonIgnoreSystemAttribute)) { jsonIgnoreSystem = true; }
                         break;
@@ -234,9 +309,26 @@ namespace EnumScribe.Generator
             return true;
         }
 
+        /// <summary>
+        /// Validates that the supplied name exists in the current compilation.
+        /// </summary>
+        /// <param name="fullyQualifiedMetadataName">The fully qualified name to validate.</param>
+        /// <returns><see langword="true"/> if the specified name exists; otherwise <see langword="false"/>.</returns>
         private bool IsTypeAvailable(string fullyQualifiedMetadataName)
             => _context.Compilation.GetTypeByMetadataName(fullyQualifiedMetadataName) is not null;
 
+        /// <summary>
+        /// Parses the lineage of the supplied compilation symbol up to the global namespace, creating an internal type
+        /// object for each type.
+        /// </summary>
+        /// <remarks>
+        /// Parsing short circuits if a non-<see langword="partial"/> parent type is encountered.
+        /// </remarks>
+        /// <param name="symbol">The compilation symbol represented by <paramref name="info"/></param>
+        /// <param name="info">The internal type object associated with <paramref name="symbol"/></param>
+        /// <returns>
+        /// <see langword="true"/> if all parent types are <see langword="partial"/>; otherwise <see langword="false"/>.
+        /// </returns>
         private bool ProcessTypeLineage(INamedTypeSymbol symbol, TypeInfo info)
         {
             if (symbol.ContainingType is null)
@@ -274,13 +366,26 @@ namespace EnumScribe.Generator
             return ProcessTypeLineage(parentSymbol, parentInfo);
         }
 
+        /// <summary>
+        /// First pass selection of any <see cref="Enum"/> (or nullable <see cref="Enum"/>) type members meeting the supplied type and
+        /// accessibility requirements.
+        /// </summary>
+        /// <param name="typeSymbol">The compilation symbol to parse.</param>
+        /// <param name="includeFields">The switch to include field members.</param>
+        /// <param name="accessibility">The access levels to include.</param>
+        /// <returns>
+        /// Information (Member symbol, member symbol's type, nullability) on each compilation symbol member meeting
+        /// the supplied criteria.
+        /// </returns>
         private IEnumerable<(ISymbol Symbol, INamedTypeSymbol Type, bool IsNullable)> GetEnumMembers(
             INamedTypeSymbol typeSymbol, bool includeFields, HashSet<Accessibility> accessibility)
         {
+            // TODO: This could really do with an efficiency pass...
+
             // This is a little clunky as the most specific shared interface between IPropertySymbol and IFieldSymbol
             // is ISymbol, which loses access to Type and NullableAnnotation members.
 
-            //! Local func closes over accessibility
+            //! Local func closes over accessibility - Does not increase its' lifetime though
             bool IsEnumMember<T>((T Symbol, INamedTypeSymbol Type, bool IsNullable) member) where T : ISymbol
                 => accessibility.Contains(member.Symbol.DeclaredAccessibility)
                     && member.Type is INamedTypeSymbol t && IsMemberSymbolAnEnum(t);
@@ -292,6 +397,8 @@ namespace EnumScribe.Generator
 
             if (includeFields)
             {
+                // TODO: Fix quick and dirty field handling; Concat
+
                 typeEnumMemberSymbols = typeSymbol.GetMembers()
                     .OfType<IFieldSymbol>()
                     .Select(x =>
@@ -304,6 +411,22 @@ namespace EnumScribe.Generator
             return typeEnumMemberSymbols;
         }
 
+        /// <summary>
+        /// Parses the filtered enum type member data associated with the supplied <paramref name="typeInfo"/>.
+        /// </summary>
+        /// <remarks>
+        /// The process is <b>not</b> short circuited by errors, failed members will be skipped without aborting
+        /// processing entirely.
+        /// </remarks>
+        /// <param name="typeEnumMemberData">The type member data to parse.</param>
+        /// <param name="typeMemberNameToSymbols">Mapping of each member identifier name to compilation symbol.</param>
+        /// <param name="typeInfo">
+        /// The internal type object associated with the compilation type symbol owning the members present in
+        /// <paramref name="typeEnumMemberData"/>.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if any member was successfully parsed; otherwise <see langword="false"/>.
+        /// </returns>
         private bool ProcessEnumMembers(
             IEnumerable<(ISymbol Symbol, INamedTypeSymbol Type, bool IsNullable)> typeEnumMemberData,
             Dictionary<string, IEnumerable<ISymbol>> typeMemberNameToSymbols,
@@ -418,6 +541,11 @@ namespace EnumScribe.Generator
             return shouldScribe;
         }
 
+        /// <summary>
+        /// Parses the supplied compilation symbol into the generator's internal enum representation.
+        /// </summary>
+        /// <param name="symbol">The compilation symbol to parse.</param>
+        /// <returns>The parsed enum data object.</returns>
         private EnumInfo GetEnumInfo(INamedTypeSymbol symbol)
         {
             if (symbol.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T)
@@ -483,6 +611,13 @@ namespace EnumScribe.Generator
             return enumInfo;
         }
 
+        /// <summary>
+        /// Parses the generic arguments on the supplied compilation symbol.
+        /// </summary>
+        /// <param name="symbol">The compilation symbol to parse.</param>
+        /// <returns>
+        /// The source text representation of the type's generic parameters if present; otherwise <see langword="null"/>.
+        /// </returns>
         private static string? GetGenericSignature(INamedTypeSymbol symbol)
         {
             if (symbol.IsGenericType == false) { return null; }
@@ -509,8 +644,16 @@ namespace EnumScribe.Generator
 
         #region Generating
 
+        /// <summary>
+        /// Generates the enum extensions source code using a syntax factory.
+        /// </summary>
+        /// <returns>The text of the enum extensions file.</returns>
         private SourceText GenerateEnumsSource() => EnumScribeSyntaxFactory.GenerateEnumsSource(_enumInfos, IndentWidth);
 
+        /// <summary>
+        /// Generates the partials source code using manual generation.
+        /// </summary>
+        /// <returns>The text of the partials file.</returns>
         private SourceText GeneratePartialsSource()
         {
             StringBuilder sb = new(capacity: 320);
@@ -646,7 +789,16 @@ using ").Append(ExtensionsNamespace).AppendLine(@";
 
         #region Validation
 
-        private static bool IsValidIdentifierSuffix(ReadOnlySpan<char> suffix)
+        /// <summary>
+        /// Validates the supplied suffix only contains valid type member identifier characters.
+        /// </summary>
+        /// <remarks>
+        /// This does not account for the maximum length of a the combined identifier, which is currently a maximum of
+        /// 512 characters. (Anything longer results in CS0645)
+        /// </remarks>
+        /// <param name="suffix">The type member identifier suffix to validate.</param>
+        /// <returns><see langword="true"/> if the suffix is valid; otherwise <see langword="false"/>.</returns>
+        private static bool IsValidTypeMemberIdentifierSuffix(ReadOnlySpan<char> suffix)
         {
             for (int ii = 0; ii < suffix.Length; ++ii)
             {
@@ -674,6 +826,14 @@ using ").Append(ExtensionsNamespace).AppendLine(@";
             return true;
         }
 
+        /// <summary>
+        /// Checks if the supplied symbol is an <see cref="Enum"/>.
+        /// </summary>
+        /// <param name="symbol">The compilation symbol to examine.</param>
+        /// <returns>
+        /// <see langword="true"/> if the supplied symbol is an <see cref="Enum"/> or nullable <see cref="Enum"/>;
+        /// otherwise <see langword="false"/>.
+        /// </returns>
         private static bool IsMemberSymbolAnEnum(INamedTypeSymbol symbol)
             // Enum
             => symbol.TypeKind is TypeKind.Enum
@@ -682,14 +842,31 @@ using ").Append(ExtensionsNamespace).AppendLine(@";
                     // One type arg is guaranteed by Nullable<T>
                     && symbol.TypeArguments[0].TypeKind is TypeKind.Enum);
 
-        private static bool IsMemberSymbolInScribedType(INamedTypeSymbol symbol)
+        /// <summary>
+        /// Checks if the supplied type symbol is marked with the <see cref="ScribeAttribute"/>.
+        /// </summary>
+        /// <param name="symbol">The compilation symbol to examine.</param>
+        /// <returns>
+        /// <see langword="true"/> if the supplied symbol is scribed; otherwise <see langword="false"/>.
+        /// </returns>
+        private static bool IsTypeSymbolScribed(INamedTypeSymbol symbol)
             => symbol.GetAttributes().Any(x => x.AttributeClass?.Name == nameof(ScribeAttribute));
 
+        /// <summary>
+        /// Validates all uses of <see cref="NoScribeAttribute"/> on field members, emitting anaylzer diagnostics as
+        /// necessary.
+        /// </summary>
+        /// <remarks>
+        /// Behaviour is identical to <see cref="ValidateNoScribedPropertySymbols"/>; however is split into two methods
+        /// as <see cref="IFieldSymbol"/> and <see cref="IPropertySymbol"/> don't have a shared ancestor with access to
+        /// <see cref="IFieldSymbol.Type"/>.
+        /// </remarks>
+        /// <param name="noScribeFieldSymbols">The field compilation symbols to validate.</param>
         private void ValidateNoScribedFieldSymbols(List<IFieldSymbol> noScribeFieldSymbols)
         {
             foreach (var fieldSymbol in noScribeFieldSymbols)
             {
-                if (IsMemberSymbolInScribedType(fieldSymbol.ContainingType) == false)
+                if (IsTypeSymbolScribed(fieldSymbol.ContainingType) == false)
                 {
                     var attribute = fieldSymbol.GetAttributes()
                         .First(x => x.AttributeClass?.Name == nameof(NoScribeAttribute));
@@ -712,11 +889,21 @@ using ").Append(ExtensionsNamespace).AppendLine(@";
             }
         }
 
+        /// <summary>
+        /// Validates all uses of <see cref="NoScribeAttribute"/> on property members, emitting anaylzer diagnostics as
+        /// necessary.
+        /// </summary>
+        /// <remarks>
+        /// Behaviour is identical to <see cref="ValidateNoScribedFieldSymbols"/>; however is split into two methods
+        /// as <see cref="IPropertySymbol"/> and <see cref="IFieldSymbol"/> don't have a shared ancestor with access to
+        /// <see cref="IPropertySymbol.Type"/>.
+        /// </remarks>
+        /// <param name="noScribePropertySymbols">The property compilation symbols to validate.</param>
         private void ValidateNoScribedPropertySymbols(List<IPropertySymbol> noScribePropertySymbols)
         {
             foreach (var propertySymbol in noScribePropertySymbols)
             {
-                if (IsMemberSymbolInScribedType(propertySymbol.ContainingType) == false)
+                if (IsTypeSymbolScribed(propertySymbol.ContainingType) == false)
                 {
                     var attribute = propertySymbol.GetAttributes()
                         .First(x => x.AttributeClass?.Name == nameof(NoScribeAttribute));

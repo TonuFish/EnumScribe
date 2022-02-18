@@ -4,10 +4,21 @@ using static EnumScribe.Generator.EnumScribeConsts;
 
 namespace EnumScribe.Generator
 {
+    /// <summary>
+    /// Internal representation of a given <see cref="ITypeSymbol"/>.
+    /// </summary>
     internal sealed class TypeInfo
     {
         public string FullName => $"{Namespace}.{Name}{GenericSignature}";
+
+        /// <summary>
+        /// The text representation of the type's generic declaration (EG. <c>&lt;T, U&gt;</c>)
+        /// </summary>
         public string? GenericSignature { get; set; }
+
+        /// <summary>
+        /// Defaults to <see cref="Defaults.ImplementPartialMethods"/>.
+        /// </summary>
         public bool ImplementPartialMethods { get; set; } = Defaults.ImplementPartialMethods;
 
         /// <summary>
@@ -51,6 +62,9 @@ namespace EnumScribe.Generator
         }
     }
 
+    /// <summary>
+    /// Subset of C# types used by EnumScribe.
+    /// </summary>
     internal enum Type
     {
         Class = 1,
