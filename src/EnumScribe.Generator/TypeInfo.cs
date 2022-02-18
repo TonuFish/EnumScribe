@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
-using static EnumScribe.Generator.EnumScribeConsts;
+using static EnumScribe.Generator.Consts;
 
 namespace EnumScribe.Generator
 {

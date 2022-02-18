@@ -1,11 +1,9 @@
-﻿using System;
-
-namespace EnumScribe
+﻿namespace EnumScribe
 {
     /// <summary>
     /// Specifies member accessibility modifiers.
     /// </summary>
-    [Flags]
+    [System.Flags]
     public enum AccessModifier
     {
         /// <summary>

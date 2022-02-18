@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace EnumScribe.Generator
 {
-    internal static class EnumScribeConsts
+    internal static class Consts
     {
         public const string PackageVersion = "1.1.1";
         public const string ExtensionsNamespace = "EnumScribe.Extensions";

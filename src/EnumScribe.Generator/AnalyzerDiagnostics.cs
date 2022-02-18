@@ -6,7 +6,7 @@ namespace EnumScribe.Generator
     /// <summary>
     /// Analyzer diagnostics used by EnumScribe.
     /// </summary>
-    internal static class EnumScribeDiagnostics
+    internal static class AnalyzerDiagnostics
     {
         /// <summary>
         /// Fix invalid suffix argument.<br />

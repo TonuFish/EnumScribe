@@ -1,14 +1,14 @@
 ﻿//#define LAUNCH_DEBUGGER
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Globalization;
-using static EnumScribe.Generator.EnumScribeConsts;
-using Microsoft.CodeAnalysis.Text;
+using static EnumScribe.Generator.Consts;
 
 namespace EnumScribe.Generator
 {
@@ -118,7 +118,7 @@ namespace EnumScribe.Generator
                     if (typeInfo.IsPartial == false)
                     {
                         _context.ReportDiagnostic(Diagnostic.Create(
-                            descriptor: EnumScribeDiagnostics.ES0002,
+                            descriptor: AnalyzerDiagnostics.ES0002,
                             location: typeSymbol.Locations[0],
                             typeInfo.Name));
 
@@ -157,7 +157,7 @@ namespace EnumScribe.Generator
                 if (typeEnumMemberSymbols.Any() == false)
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        descriptor: EnumScribeDiagnostics.ES1003,
+                        descriptor: AnalyzerDiagnostics.ES1003,
                         location: attributeLocation,
                         typeInfo.Name));
 
@@ -274,7 +274,7 @@ namespace EnumScribe.Generator
                 if (userSuffix is null || (IsValidTypeMemberIdentifierSuffix(userSuffix!.AsSpan()) == false))
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        descriptor: EnumScribeDiagnostics.ES0001,
+                        descriptor: AnalyzerDiagnostics.ES0001,
                         location: attributeLocation));
 
                     return false;
@@ -357,7 +357,7 @@ namespace EnumScribe.Generator
             if (parentInfo.IsPartial == false)
             {
                 _context.ReportDiagnostic(Diagnostic.Create(
-                    descriptor: EnumScribeDiagnostics.ES0003,
+                    descriptor: AnalyzerDiagnostics.ES0003,
                     location: parentSymbol.Locations[0],
                     parentInfo.Name));
                 return false;
@@ -480,7 +480,7 @@ namespace EnumScribe.Generator
                         if (typeInfo.ImplementPartialMethods == false)
                         {
                             _context.ReportDiagnostic(Diagnostic.Create(
-                                descriptor: EnumScribeDiagnostics.ES0005,
+                                descriptor: AnalyzerDiagnostics.ES0005,
                                 location: memberSymbolData.Symbol.Locations[0],
                                 memberSymbolData.Symbol.Name, typeInfo.Name));
 
@@ -496,7 +496,7 @@ namespace EnumScribe.Generator
                     else
                     {
                         _context.ReportDiagnostic(Diagnostic.Create(
-                            descriptor: EnumScribeDiagnostics.ES0004,
+                            descriptor: AnalyzerDiagnostics.ES0004,
                             location: memberSymbolData.Symbol.Locations[0],
                             memberSymbolData.Symbol.Name));
 
@@ -570,7 +570,7 @@ namespace EnumScribe.Generator
                 if (descriptionAttribute is null)
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        descriptor: EnumScribeDiagnostics.ES1001,
+                        descriptor: AnalyzerDiagnostics.ES1001,
                         location: enumSymbol.Locations[0],
                         enumSymbol.Name));
 
@@ -580,7 +580,7 @@ namespace EnumScribe.Generator
                 else if (descriptionAttribute.ConstructorArguments.Length == 0)
                 {
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        descriptor: EnumScribeDiagnostics.ES1002,
+                        descriptor: AnalyzerDiagnostics.ES1002,
                         location: enumSymbol.Locations[0],
                         enumSymbol.Name));
 
@@ -598,7 +598,7 @@ namespace EnumScribe.Generator
                     else
                     {
                         _context.ReportDiagnostic(Diagnostic.Create(
-                            descriptor: EnumScribeDiagnostics.ES1002,
+                            descriptor: AnalyzerDiagnostics.ES1002,
                             location: enumSymbol.Locations[0],
                             enumSymbol.Name));
 
@@ -648,142 +648,13 @@ namespace EnumScribe.Generator
         /// Generates the enum extensions source code using a syntax factory.
         /// </summary>
         /// <returns>The text of the enum extensions file.</returns>
-        private SourceText GenerateEnumsSource() => EnumScribeSyntaxFactory.GenerateEnumsSource(_enumInfos, IndentWidth);
+        private SourceText GenerateEnumsSource() => EnumExtensionsSyntaxFactory.GenerateEnumsSource(_enumInfos, IndentWidth);
 
         /// <summary>
         /// Generates the partials source code using manual generation.
         /// </summary>
         /// <returns>The text of the partials file.</returns>
-        private SourceText GeneratePartialsSource()
-        {
-            StringBuilder sb = new(capacity: 320);
-
-            sb.Append(
-@"// <autogenerated/>
-#nullable enable
-using ").Append(ExtensionsNamespace).AppendLine(@";
-");
-
-            // Reduce to base types (not nested), group by namespace
-            var typesByNamespace = _typeInfos
-                .Where(x => x.ParentType is null && x.HasFullPartialLineage)
-                .GroupBy(x => x.Namespace);
-
-            foreach (var namespaceGroup in typesByNamespace)
-            {
-                var baseIndent = 0;
-
-                if (namespaceGroup.Key != GlobalNamespaceName)
-                {
-                    sb
-                        .Append("namespace ")
-                        .AppendLine(namespaceGroup.Key)
-                        .Append('{');
-
-                    baseIndent = 1;
-                }
-
-                foreach (var rootType in namespaceGroup)
-                {
-                    sb.AppendLine();
-                    GenerateTypeText(sb, rootType, baseIndent);
-                }
-
-                if (namespaceGroup.Key != GlobalNamespaceName)
-                {
-                    sb.AppendLine("}");
-                }
-
-                sb.AppendLine();
-            }
-
-            sb.Length -= Environment.NewLine.Length;
-
-            sb.AppendLine(
-"#nullable restore");
-
-            return SourceText.From(sb.ToString(), Encoding.UTF8, SourceHashAlgorithm.Sha256);
-
-            static void GenerateTypeText(StringBuilder sb, TypeInfo type, int typeIndent)
-            {
-                sb
-                    .Append(' ', typeIndent * IndentWidth)
-                    .Append("partial ")
-                    .Append(type.Type.ToText())
-                    .Append(' ')
-                    .Append(type.Name)
-                    .AppendLine(type.GenericSignature)
-                    .Append(' ', typeIndent * IndentWidth)
-                    .AppendLine("{");
-
-                if (type.ShouldScribe)
-                {
-                    var methodIndent = typeIndent + 1;
-
-                    if (type.EnumTypeMembers is not null)
-                    {
-                        foreach (var member in type.EnumTypeMembers)
-                        {
-                            if (member.IsPartialMethod == false)
-                            {
-                                if (type.JsonIgnoreNewtonsoft)
-                                {
-                                    WriteMemberAttributeText(sb, JsonIgnoreNewtonsoftAttribute, methodIndent);
-                                }
-                                if (type.JsonIgnoreSystem)
-                                {
-                                    WriteMemberAttributeText(sb, JsonIgnoreSystemAttribute, methodIndent);
-                                }
-                            }
-
-                            WriteMemberText(sb, type, member, methodIndent);
-                        }
-                    }
-
-                    if (type.NestedTypes is not null)
-                    {
-                        sb.AppendLine();
-                    }
-                }
-
-                if (type.NestedTypes is not null)
-                {
-                    foreach (var nestedType in type.NestedTypes)
-                    {
-                        GenerateTypeText(sb, nestedType, typeIndent + 1);
-                    }
-                }
-
-                sb.Append(' ', typeIndent * IndentWidth).AppendLine("}");
-            }
-
-            static string StaticText(bool isStatic) => isStatic ? "static " : string.Empty;
-
-            static void WriteMemberAttributeText(StringBuilder sb, string attribute, int indent)
-            {
-                sb
-                    .Append(' ', indent * IndentWidth)
-                    .Append('[')
-                    .Append(attribute)
-                    .AppendLine("]");
-            }
-
-            static void WriteMemberText(StringBuilder sb, TypeInfo type, MemberInfo member, int indent)
-            {
-                sb
-                    .Append(' ', indent * IndentWidth)
-                    .Append(member.Accessibility.ToText())
-                    .Append(' ')
-                    .Append(StaticText(member.IsStatic))
-                    .Append(member.IsPartialMethod ? "partial " : string.Empty)
-                    .Append(member.IsNullable ? "string? " : "string ")
-                    .Append(member.Name)
-                    .Append(type.Suffix)
-                    .Append(member.IsPartialMethod ? "() => " : " => ")
-                    .Append(member.Name)
-                    .AppendLine(member.IsNullable ? "?.DescriptionText();" : ".DescriptionText();");
-            }
-        }
+        private SourceText GeneratePartialsSource() => PartialsSyntaxGeneration.GeneratePartialsSource(_typeInfos, IndentWidth);
 
         #endregion Generating
 
@@ -872,7 +743,7 @@ using ").Append(ExtensionsNamespace).AppendLine(@";
                         .First(x => x.AttributeClass?.Name == nameof(NoScribeAttribute));
 
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        descriptor: EnumScribeDiagnostics.ES1004,
+                        descriptor: AnalyzerDiagnostics.ES1004,
                         location: GetAttributeLocation(attribute),
                         fieldSymbol.Name));
                 }
@@ -882,7 +753,7 @@ using ").Append(ExtensionsNamespace).AppendLine(@";
                         .First(x => x.AttributeClass?.Name == nameof(NoScribeAttribute));
 
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        descriptor: EnumScribeDiagnostics.ES1005,
+                        descriptor: AnalyzerDiagnostics.ES1005,
                         location: GetAttributeLocation(attribute),
                         fieldSymbol.Name));
                 }
@@ -909,7 +780,7 @@ using ").Append(ExtensionsNamespace).AppendLine(@";
                         .First(x => x.AttributeClass?.Name == nameof(NoScribeAttribute));
 
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        descriptor: EnumScribeDiagnostics.ES1004,
+                        descriptor: AnalyzerDiagnostics.ES1004,
                         location: GetAttributeLocation(attribute),
                         propertySymbol.Name));
                 }
@@ -919,7 +790,7 @@ using ").Append(ExtensionsNamespace).AppendLine(@";
                         .First(x => x.AttributeClass?.Name == nameof(NoScribeAttribute));
 
                     _context.ReportDiagnostic(Diagnostic.Create(
-                        descriptor: EnumScribeDiagnostics.ES1005,
+                        descriptor: AnalyzerDiagnostics.ES1005,
                         location: GetAttributeLocation(attribute),
                         propertySymbol.Name));
                 }

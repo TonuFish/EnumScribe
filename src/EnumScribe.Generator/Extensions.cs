@@ -1,11 +1,11 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
-using static EnumScribe.Generator.EnumScribeConsts;
+using static EnumScribe.Generator.Consts;
 
 namespace EnumScribe.Generator
 {
-    internal static class EnumScribeExtensions
+    internal static class Extensions
     {
         /// <summary>
         /// Converts the Scribe <see cref="AccessModifier"/> flags to standard <see cref="Accessibility"/> enums.
