@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EnumScribe.Generator
 {

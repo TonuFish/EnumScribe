@@ -12,9 +12,9 @@ namespace EnumScribe.Generator
     // Unbelievably handy to get a solid starting point when writing a syntax factory :)
 
     /// <summary>
-    /// A <see cref="SyntaxFactory"/> to generate EnumScribe source text.
+    /// A <see cref="SyntaxFactory"/> to generate EnumScribe enum extensions source text.
     /// </summary>
-    internal static class EnumScribeSyntaxFactory
+    internal static class EnumExtensionsSyntaxFactory
     {
         /// <summary>
         /// Generates a switch expression for the supplied enum details.
@@ -190,7 +190,7 @@ namespace EnumScribe.Generator
                                                     Token(SyntaxKind.CommaToken),
                                                     AttributeArgument(LiteralExpression(
                                                         SyntaxKind.StringLiteralExpression,
-                                                        Literal(EnumScribeConsts.PackageVersion)))
+                                                        Literal(Consts.PackageVersion)))
                                                 }))
                                         ))))
                             )
