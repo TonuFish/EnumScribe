@@ -5,6 +5,9 @@ using System.Collections.Generic;
 
 namespace EnumScribe.Generator
 {
+    /// <summary>
+    /// Filters and records the <see cref="SyntaxNode"/>s relevant to EnumScribe generator.
+    /// </summary>
     internal sealed class EnumScribeSyntaxReceiver : ISyntaxContextReceiver
     {
         public List<IFieldSymbol> NoScribeAttributeFieldSymbols { get; } = new();
