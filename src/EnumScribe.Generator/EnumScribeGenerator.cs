@@ -456,7 +456,7 @@ namespace EnumScribe.Generator
                     var validSymbol = existingSymbols.FirstOrDefault(x => x is IMethodSymbol m
                         && m.IsPartialDefinition
                         && m.PartialImplementationPart is null
-                        && m.IsGenericMethod == false
+                        && (m.IsGenericMethod == false)
                         // Method scoping is compatible; only illegal permutation is static method + instance member
                         && (memberSymbolData.Symbol.IsStatic || (m.IsStatic == false))
                         && m.Parameters.IsEmpty
