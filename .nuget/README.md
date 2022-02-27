@@ -4,7 +4,7 @@ An easy-to-use source generator providing efficient access to enum description t
 
 ## Why?
 
-When binding an enum to a UI component, it's uncommon to be able to display the enum identifier itself, EG. "OutOfStock" doesn't adhere to english grammar. Working around this usually either comes with a runtime cost (reflection) or maintainability cost (manual enum -> text mapping)
+When binding an enum to a UI component, it's uncommon to want to display the enum identifier itself, EG. "OutOfStock" doesn't adhere to english grammar. Working around this usually either comes with a runtime cost (reflection) or maintainability cost (manual enum -> text mapping)
 
 EnumScribe simplifies the process by generating the mapping at compile time based on `Description` attributes and exposing it via properties added to the type, making the text easier to consume in most UI frameworks.
 
@@ -70,8 +70,8 @@ Compiler errors [CS1061](https://docs.microsoft.com/en-us/dotnet/csharp/language
 
 ## Planned work
 
+- Proper tests (*no longer* pending package update)
 - Update to source generators 2.0 (`IIncrementalGenerator`)
-- Proper tests (pending package update)
 - Benchmarks
 - Localise diagnostic text
 - Scribe `T` in generic types where `T` is an enum
