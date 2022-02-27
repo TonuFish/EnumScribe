@@ -1,9 +1,7 @@
 ﻿using EnumScribe.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Buffers;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -50,7 +48,7 @@ namespace EnumScribe.Tests
                 syntaxTrees: new[] { syntaxTree },
                 references: references);
 
-            var generator = new EnumScribeGenerator();
+            EnumScribeGenerator generator = new();
             GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
             driver = driver.RunGenerators(compilation);
 
