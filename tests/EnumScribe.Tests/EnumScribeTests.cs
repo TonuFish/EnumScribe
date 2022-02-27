@@ -1,91 +1,69 @@
-// REFERENCE:
-// https://github.com/dotnet/roslyn-sdk/blob/main/src/Microsoft.CodeAnalysis.Testing/README.md
+using System.Threading.Tasks;
+using VerifyXunit;
+using Xunit;
 
-// Waiting on a PR to Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing.XUnit
-// https://github.com/dotnet/roslyn-sdk/pull/918
-// Currently depends on Microsoft.CodeAnalysis 3.8.0.0, EnumScribe uses 4.0.0.0
-// It's not really feasible to downgrade scribe as there's significant differences in the API
-// between the versions.
+namespace EnumScribe.Tests
+{
+    [UsesVerify]
+    public class EnumScribeTests
+    {
+        /*
+         * TODO: Rough test list
+         * Class v record scribed type
+         * Nested permutations (class, record, struct, record struct)
+         * Global namespace
+         * Enum nullability correct
+         * Suffix validates
+         * Suffix works
+         * AccessModifiers works
+         * ImplementPartialMethods toggles correctly
+         * Partial method implementation when correct
+         * IncludeFields works
+         * IgnoreScribe works for all permutations (This will be interesting...)
+         * NoScribe works
+         * Remaining analyzer warnings
+         * ETC.
+         */
 
-//using EnumScribe.Internal;
-//using Microsoft.CodeAnalysis;
-//using Microsoft.CodeAnalysis.CSharp;
-//using Microsoft.CodeAnalysis.CSharp.Testing;
-//using Microsoft.CodeAnalysis.CSharp.Syntax;
-//using Microsoft.CodeAnalysis.Testing;
-//using Microsoft.CodeAnalysis.Testing.Verifiers;
-//using Microsoft.CodeAnalysis.Text;
-//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
-//using FluentAssertions;
-//using Xunit;
-//using static EnumScribe.Internal.EnumScribeConsts;
-//using Verifier = EnumScribe.Tests.CSharpSourceGeneratorVerifier<EnumScribe.Internal.EnumScribeGenerator>;
+        [Theory]
+        [InlineData("class")]
+        [InlineData("record")]
+        public Task DummyTest(string type)
+        {
+            const string rawSource =
+@"using EnumScribe;
+using System;
+using System.ComponentModel;
 
-//namespace EnumScribe.Tests
-//{
-//    public class EnumScribeTests
-//    {
-//        [Fact]
-//        public async Task DummyTest()
-//        {
-//            var enumSource = PrepareSourceTemplate(SourceTemplates.Enum.OneEnumThreeMembersTemplate, new());
-//            var typeSource = PrepareSourceTemplate(SourceTemplates.Type.OneTypeNoNestingInNamespaceTemplate, new());
-//            var enumResult = PrepareResultTemplate(ResultTemplates.Enum.OneEnumThreeMembersTemplateResult, new());
-//            var typeResult = PrepareResultTemplate(ResultTemplates.Type.OneTypeNoNestingInNamespaceTemplateResult, new());
+namespace TestCode
+{
+    [Scribe(AccessModifiers = AccessModifier.Internal | AccessModifier.Private)]
+    public partial %%TYPE%% Inventory
+    {
+        public StockLevel? CakeStock { get; set; }
+        internal StockLevel FishStock { get; set; }
 
-//            await new Verifier.Test
-//            {
-//                TestState =
-//                {
-//                    Sources = { enumSource, typeSource, },
-//                    GeneratedSources =
-//                    {
-//                        (typeof(EnumScribeGenerator), EnumScribeGenerator.EnumsHintName, enumResult),
-//                        (typeof(EnumScribeGenerator), EnumScribeGenerator.PartialsHintName, typeResult),
-//                    },
-//                    //ExpectedDiagnostics =
-//                    //{
-//                    //    new DiagnosticResult(EnumScribeDiagnostics.ES0001).WithLocation(line int, col int)
-//                    //}
-//                },
-//            }.RunAsync().ConfigureAwait(true);
-//        }
+        [NoScribe]
+        public StockLevel PieStock { get; set; }
 
-//        // ScribeEnum default works
-//        // - Targeting right namespaces
-//        // - Targeting right classes
-//        //   - Nullable properties found
-//        // - Targeting right enums
-//        // Convention works
-//        // IgnoreScribe works
-//        // IncludeFields works
-//        // PublicOnly works
-//        // Etc.
+        private StockLevel _alpacaStock;
+    }
 
-//        public static SourceText PrepareSourceTemplate(string sourceTemplate, TemplateOptions options)
-//        {
-//            // TODO: Implement, or not, probably do something better &| easier
-//            return SourceText.From(sourceTemplate, Encoding.UTF8, SourceHashAlgorithm.Sha256);
-//        }
+    public enum StockLevel
+    {
+        [Description(""In stock"")]
+        Available = 0,
+        [Description(""Low stock"")]
+        Low,
+        [Description(""Out of stock"")]
+        OutOfStock,
+        [Description(""Unavailable"")]
+        Retired,
+    }
+}
+";
 
-//        public static SourceText PrepareResultTemplate(string resultTemplate, TemplateOptions options)
-//        {
-//            // TODO: Implement, or not, probably do something better &| easier
-//            return SourceText.From(resultTemplate, Encoding.UTF8, SourceHashAlgorithm.Sha256);
-//        }
-//    }
-
-//    public record TemplateOptions(
-//        string? EnumNamespace = null, string? EnumName = null,
-//        string? Enum0Desc = null, string? Enum0Name = null,
-//        string? Enum1Desc = null, string? Enum1Name = null,
-//        string? Enum2Desc = null, string? Enum2Name = null,
-//        string? TypeNamespace = null, string? TypeType = null, string? TypeName = null,
-//        string? TypeScribeArguments = null,
-//        string? Prop0Accessibility = null, string? Prop0Name = null,
-//        string? ScribeSuffix = null);
-//}
+            return TestHelper.Verify(rawSource.Replace("%%TYPE%%", type), type);
+        }
+    }
+}
